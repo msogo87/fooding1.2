@@ -15,6 +15,7 @@ import com.nostra13.universalimageloader.core.display.SimpleBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.robotemplates.cityguide.CityGuideApplication;
 import com.robotemplates.cityguide.R;
+import com.robotemplates.cityguide.communication.MainDbObjectData;
 import com.robotemplates.cityguide.database.model.PoiModel;
 import com.robotemplates.cityguide.listener.AnimateImageLoadingListener;
 import com.robotemplates.cityguide.utility.LocationUtility;
@@ -27,7 +28,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private static final int VIEW_TYPE_POI = 1;
 	private static final int VIEW_TYPE_FOOTER = 2;
 
-	private List<PoiModel> mPoiList;
+	private List<MainDbObjectData> mPoiList;
 	private List<Object> mFooterList;
 	private PoiViewHolder.OnItemClickListener mListener;
 	private int mGridSpanCount;
@@ -38,7 +39,8 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private ImageLoadingListener mImageLoadingListener;
 
 
-	public PoiListAdapter(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+//	public PoiListAdapter(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+	public PoiListAdapter(List<MainDbObjectData> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
 	{
 		mPoiList = poiList;
 		mFooterList = footerList;
@@ -78,7 +80,8 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		if(viewHolder instanceof PoiViewHolder)
 		{
 			// entity
-			PoiModel poi = mPoiList.get(getPoiPosition(position));
+//			PoiModel poi = mPoiList.get(getPoiPosition(position));
+			MainDbObjectData poi = mPoiList.get(getPoiPosition(position));
 
 			// bind data
 			if(poi != null)
@@ -166,7 +169,8 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 
-	public void refill(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+//	public void refill(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+	public void refill(List<MainDbObjectData> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
 	{
 		mPoiList = poiList;
 		mFooterList = footerList;
@@ -280,7 +284,8 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		}
 
 
-		public void bindData(PoiModel poi)
+//		public void bindData(PoiModel poi)
+		public void bindData(MainDbObjectData poi)
 		{
 			mNameTextView.setText(poi.getName());
 			mImageLoader.displayImage(poi.getImage(), mImageView, mDisplayImageOptions, mImageLoadingListener);

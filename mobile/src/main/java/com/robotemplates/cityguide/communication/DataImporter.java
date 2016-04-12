@@ -40,17 +40,17 @@ import android.util.Log;
 import com.robotemplates.cityguide.fragment.PoiListFragment;
 import com.robotemplates.cityguide.utility.Logcat;
 
-public class DataImporter extends AsyncTask<Location, Integer, Integer>
+public class DataImporter extends AsyncTask<Object, Integer, Integer>
 {
     private static final String TAG = "DataImporter"; // Tag for Log prints
 
     private Location mLocation;                       // input type for doInBackground
-    private Location mLocationDebug;
     private List<MainDbObjectData> mPoiList;          // output data list that goes to call back method    // IMPORTATNT!! : This was public for some reason
     private WeakReference<DataImporterListener> mListener;
     private PoiListFragment mPoiListFragment;         // The father class type. Needed for the call back
     private Object mfatherObject;
-    private static final String SERVER_URL = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
+    private static final String SERVER_URL_4_LIST_QUERY = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
+    private static final String SERVER_URL_4_MAP_QUERY  = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
 //    public static final String SERVER_URL = "http://localhost/fooding/queryPreviewDbByLocation.php";
 //    public static final String SERVER_URL = "http://192.168.1.6:8080/fooding/queryPreviewDbByLocation.php";
 //    public static final String SERVER_URL = "http://kylewbanks.com/rest/posts";                                // random server for checking connection
@@ -65,33 +65,48 @@ public class DataImporter extends AsyncTask<Location, Integer, Integer>
     }
 
     @Override
-    protected Integer doInBackground(Location...params)
+    protected Integer doInBackground(Object...params)
     {
         Log.e(TAG, "DataImporeter Execcute start");
-        final int expectedNumOfParams = 1;
+        final int expNParamsListQuery = 1;
+        final int expNParamsMapQuery  = 2;
+        float distance = 0;
+        String serverUrl = null;
 
         Log.d(TAG, "Connecting to a remote server");
 
-        if ( params.length != expectedNumOfParams )
+        switch (params.length)
         {
-            Log.e(TAG, "doInBackground num of params is: " + params.length + ", expected: " + expectedNumOfParams );
-            return null;
+            case expNParamsListQuery:
+                serverUrl = SERVER_URL_4_LIST_QUERY;
+                mLocation = (Location)params[0];
+                break;
+
+            case expNParamsMapQuery:
+                serverUrl = SERVER_URL_4_MAP_QUERY;
+                mLocation = (Location)params[0];
+                distance = (float)params[1];
+                break;
+
+            default:
+                Log.e(TAG, "doInBackground num of params is: " + params.length + ", expected: " + expNParamsListQuery + " or " + expNParamsMapQuery );
+                return null;
         }
 
-        mLocationDebug = params[0];
-        mLocation = params[0];
-        // FOR DEBUG
-        ///////////////////////
-        if ( mLocation.getLatitude() > 32 ||
-             mLocation.getLatitude() < 33 )
-        {
-            Log.d(TAG,"Location is not the debug location intended (32.14,34.8), " +
-                      "latitude = mLocation.getLatitude(), longtitude = mLocation.getLongtitude()");
 
-            mLocation.setLatitude(32.14);
-            mLocation.setLongitude(34.8);
-        }
-        ///////////////////////
+//        ///////////////////////
+//        //     FOR DEBUG
+//        ///////////////////////
+//        if ( mLocation.getLatitude() > 32 ||
+//             mLocation.getLatitude() < 33 )
+//        {
+//            Log.d(TAG,"Location is not the debug location intended (32.14,34.8), " +
+//                      "latitude = mLocation.getLatitude(), longtitude = mLocation.getLongtitude()");
+//
+//            mLocation.setLatitude(32.16);
+//            mLocation.setLongitude(34.8);
+//        }
+//        ///////////////////////
 
         if ( 0 == mLocation.getLatitude() || 0 == mLocation.getLongitude() )
         {
@@ -102,23 +117,42 @@ public class DataImporter extends AsyncTask<Location, Integer, Integer>
 
         try
         {
-            String latitude  = "" + mLocation.getLatitude();
-            String longitude = "" + mLocation.getLongitude();
+            String latitudeString  = "" + mLocation.getLatitude();
+            String longitudeString = "" + mLocation.getLongitude();
 
-            URL url = new URL(SERVER_URL);
+            assert(serverUrl != null);
+            URL url = new URL(serverUrl);
 
-            // loginInfo - data to be sent to server (in this case -> latitude and longitude)
-            String locationString = URLEncoder.encode("latitude","UTF-8") + "=" + URLEncoder.encode(latitude,"UTF-8") + "&" +
-                                    URLEncoder.encode("longitude","UTF-8") + "=" + URLEncoder.encode(longitude,"UTF-8");
-            Log.i(TAG, "DataImporter::doInBackground : Server input string: " + locationString );
+            // inputString - data to be sent to server (in this case -> latitude and longitude)
+            String inputString = URLEncoder.encode("latitude","UTF-8") + "=" + URLEncoder.encode(latitudeString,"UTF-8") + "&" +
+                                    URLEncoder.encode("longitude","UTF-8") + "=" + URLEncoder.encode(longitudeString,"UTF-8");
+            if ( 0 != distance)
+            {
+                // if distance is available, add it to server input string
+                String distanceString = "" + distance;
+                inputString += "&" + URLEncoder.encode("maxDistance","UTF-8") + "=" + URLEncoder.encode(distanceString,"UTF-8");
+            }
+
+            ////// debug
+//            if ( 0 != distance)
+//            {
+//                distance = 2;
+//                // if distance is available, add it to server input string
+//                String distanceString = "" + distance;
+//                inputString += "&" + URLEncoder.encode("maxDistance","UTF-8") + "=" + URLEncoder.encode(distanceString,"UTF-8");
+//            }
+
+
+            Log.i(TAG, "DataImporter::doInBackground : Server input string: " + inputString );
 
             // open a connection and an output stream to the server.
             HttpURLConnection urlCon = (HttpURLConnection)url.openConnection();
             urlCon.setDoOutput(true);
             urlCon.setRequestMethod("POST");
-            urlCon.setFixedLengthStreamingMode(locationString.getBytes().length);
+//            urlCon.setRequestMethod("GET");
+            urlCon.setFixedLengthStreamingMode(inputString.getBytes().length);
             OutputStreamWriter o_stream = new OutputStreamWriter(urlCon.getOutputStream());
-            o_stream.write(locationString);
+            o_stream.write(inputString);
             o_stream.flush();
 
             try
@@ -131,8 +165,9 @@ public class DataImporter extends AsyncTask<Location, Integer, Integer>
                 // Read Server Response
                 while((line = reader.readLine()) != null)
                 {
-                    responseString.append(line);
-                    break;
+                    if (line.startsWith("[")) {
+                        responseString.append(line);
+                    }
                 }
                 reader.close();
 

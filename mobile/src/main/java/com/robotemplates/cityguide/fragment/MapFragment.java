@@ -36,6 +36,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.robotemplates.cityguide.CityGuideConfig;
@@ -43,6 +44,8 @@ import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.activity.MapActivity;
 import com.robotemplates.cityguide.activity.PoiDetailActivity;
 import com.robotemplates.cityguide.communication.DataImporter;
+import com.robotemplates.cityguide.communication.DataImporterListener;
+import com.robotemplates.cityguide.communication.MainDbObjectData;
 import com.robotemplates.cityguide.database.DatabaseCallListener;
 import com.robotemplates.cityguide.database.DatabaseCallManager;
 import com.robotemplates.cityguide.database.DatabaseCallTask;
@@ -70,24 +73,31 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MapFragment extends TaskFragment implements DatabaseCallListener
+public class MapFragment extends TaskFragment implements DatabaseCallListener, DataImporterListener, GoogleMap.OnCameraChangeListener
 {
 	private static final int MAP_ZOOM = 14;
 	private static final String TAG = "MapFragment";
+	private static final boolean mDebugMode = true;
 
 	private View mRootView;
 	private StatefulLayout mStatefulLayout;
 	private MapView mMapView;
 	private DatabaseCallManager mDatabaseCallManager = new DatabaseCallManager();
 	private List<PoiModel> mPoiList = new ArrayList<>();
-	private ClusterManager<PoiModel> mClusterManager;
+	private List<MainDbObjectData> mDIPoiList = new ArrayList<>();
+	private List<MainDbObjectData> mPois2ClustserList = new ArrayList<>();
+	private ClusterManager<MainDbObjectData> mClusterManager = null;
 	private Map<Long, BitmapDescriptor> mBitmapDescriptorMap = new HashMap<>();
-	private DataImporter mDataImporter;
+	private Map<Integer, BitmapDescriptor> mId2BitmapDescriptorMap = new HashMap<>();
 	private long mPoiId = -1L;
 	private double mPoiLatitude = 0.0;
 	private double mPoiLongitude = 0.0;
-	
-	
+	private DataImporterListener   mDataImporterListener = this;;
+	private LatLng mPrevCenter = new LatLng (0,0);
+	private float mPrevRadius = 0;
+	private boolean mIsNewCluster = false;
+	private CameraPosition mLastCameraPosition = null;
+
 	@Override
 	public void onAttach(Context context)
 	{
@@ -114,6 +124,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
+		Log.e(TAG, "onCreateView");
 		mRootView = inflater.inflate(R.layout.fragment_map, container, false);
 		initMap();
 		mMapView = (MapView) mRootView.findViewById(R.id.fragment_map_mapview);
@@ -128,22 +139,93 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 		Log.e(TAG, "Map onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 
+		initId2BitmapDescriptorMap();
+
 		// setup map
 		setupMap();
-		setupClusterManager();
+//		setupClusterManager();
 
 		// setup stateful layout
 		setupStatefulLayout(savedInstanceState);
 
-		// load data
-		if(mPoiList==null || mPoiList.isEmpty()) loadData();
-//		mDataImporter = new DataImporter((Object)this);
+		if (mPoiList == null || mPoiList.isEmpty()) loadData();
 
 		// check permissions
 		PermissionUtility.checkPermissionAccessLocation(this);
+
 	}
-	
-	
+
+	public void initId2BitmapDescriptorMap ()
+	{
+		Bitmap marker;
+
+		// discount type 1 - map_marker_buy_get
+		marker = BitmapFactory.decodeResource(getResources(), R.drawable.map_marker_buy_get);
+		mId2BitmapDescriptorMap.put(1, BitmapDescriptorFactory.fromBitmap( marker ));
+
+		// discount type 2 - map_marker_free_desert
+		marker = BitmapFactory.decodeResource(getResources(), R.drawable.map_marker_free_desert);
+		mId2BitmapDescriptorMap.put(2, BitmapDescriptorFactory.fromBitmap(marker));
+
+		// discount type 3 - map_marker_free_drinks
+		marker = BitmapFactory.decodeResource(getResources(), R.drawable.map_marker_free_drinks);
+		mId2BitmapDescriptorMap.put(3, BitmapDescriptorFactory.fromBitmap(marker));
+
+		// discount type 4 - map_marker_one_plus_one
+		marker = BitmapFactory.decodeResource(getResources(), R.drawable.map_marker_one_plus_one);
+		mId2BitmapDescriptorMap.put(4, BitmapDescriptorFactory.fromBitmap(marker));
+
+		// discount type 5 - map_marker_percentage
+		marker = BitmapFactory.decodeResource(getResources(), R.drawable.map_marker_percentage);
+		mId2BitmapDescriptorMap.put(5, BitmapDescriptorFactory.fromBitmap( marker ));
+	}
+
+	@Override
+	public void onDataImporterTaskCompleted(final List<MainDbObjectData> dIpoiList)
+	{
+		runTaskCallback(new Runnable() {
+			public void run() {
+				Log.e(TAG, "DataImporeter callback start...");
+				Log.d(TAG, "onDataImporterTaskCompleted: poiList length is: " + dIpoiList.size());
+
+				mPois2ClustserList.clear();
+				for (MainDbObjectData poi : dIpoiList) {
+					if (!mDIPoiList.contains(poi))
+//					if ( mDIPoiList.Fin )
+					{
+						mPois2ClustserList.add(poi);
+						mDIPoiList.add(poi);
+					}
+				}
+
+//				mDIPoiList  = dIpoiList;
+
+				// load data
+				if (mPoiList == null || mPoiList.isEmpty()) loadData();
+
+				//initId2BitmapDescriptorMap();
+
+				bindData();
+//				// lazy loading progress
+//				if(mLazyLoading) showLazyLoadingProgress(true);
+//
+//				// show toolbar if hidden
+//				showToolbar(true);
+//
+//				// calculate distances and sort
+//				calculatePoiDistances();
+//				sortPoiByDistance();
+//				if(mAdapter!=null && mLocation!=null && mPoiList!=null && !mPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
+			}
+		});
+	}
+
+	@Override
+	public void onDataImporterTaskFailed(int retVal)
+	{
+
+	}
+
 	@Override
 	public void onStart()
 	{
@@ -309,14 +391,11 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 	@Override
 	public void onDatabaseCallRespond(final DatabaseCallTask task, final Data<?> data)
 	{
-		runTaskCallback(new Runnable()
-		{
-			public void run()
-			{
-				if(mRootView == null) return; // view was destroyed
+		runTaskCallback(new Runnable() {
+			public void run() {
+				if (mRootView == null) return; // view was destroyed
 
-				if(task.getQuery().getClass().equals(PoiReadAllQuery.class))
-				{
+				if (task.getQuery().getClass().equals(PoiReadAllQuery.class)) {
 					Logcat.d("PoiReadAllQuery");
 
 					// get data
@@ -324,15 +403,14 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 					List<PoiModel> poiList = poiReadAllData.getDataObject();
 					mPoiList.clear();
 					Iterator<PoiModel> iterator = poiList.iterator();
-					while(iterator.hasNext())
-					{
+					while (iterator.hasNext()) {
 						PoiModel poi = iterator.next();
 						mPoiList.add(poi);
 					}
 				}
 
 				// hide progress and bind data
-				if(mPoiList!=null && !mPoiList.isEmpty()) mStatefulLayout.showContent();
+				if (mPoiList != null && !mPoiList.isEmpty()) mStatefulLayout.showContent();
 				else mStatefulLayout.showEmpty();
 
 				// finish query
@@ -345,19 +423,16 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 	@Override
 	public void onDatabaseCallFail(final DatabaseCallTask task, final Exception exception)
 	{
-		runTaskCallback(new Runnable()
-		{
-			public void run()
-			{
-				if(mRootView == null) return; // view was destroyed
+		runTaskCallback(new Runnable() {
+			public void run() {
+				if (mRootView == null) return; // view was destroyed
 
-				if(task.getQuery().getClass().equals(PoiReadAllQuery.class))
-				{
+				if (task.getQuery().getClass().equals(PoiReadAllQuery.class)) {
 					Logcat.d("PoiReadAllQuery / exception " + exception.getClass().getSimpleName() + " / " + exception.getMessage());
 				}
 
 				// hide progress
-				if(mPoiList!=null && !mPoiList.isEmpty()) mStatefulLayout.showContent();
+				if (mPoiList != null && !mPoiList.isEmpty()) mStatefulLayout.showContent();
 				else mStatefulLayout.showEmpty();
 
 				// handle fail
@@ -416,9 +491,12 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 		if(map!=null)
 		{
 			// add pois
-			map.clear();
-			mClusterManager.clearItems();
-			for(PoiModel poi : mPoiList)
+//			map.clear();
+//			mClusterManager.clearItems();
+//			for(PoiModel poi : mPoiList) mDIPoiList
+
+			for(MainDbObjectData poi : mPois2ClustserList)
+//			for(MainDbObjectData poi : mDIPoiList)
 			{
 				mClusterManager.addItem(poi);
 			}
@@ -486,18 +564,15 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 		mStatefulLayout = (StatefulLayout) mRootView;
 
 		// state change listener
-		mStatefulLayout.setOnStateChangeListener(new StatefulLayout.OnStateChangeListener()
-		{
+		mStatefulLayout.setOnStateChangeListener(new StatefulLayout.OnStateChangeListener() {
 			@Override
-			public void onStateChange(View v, StatefulLayout.State state)
-			{
-				Logcat.d("" + (state==null ? "null" : state.toString()));
+			public void onStateChange(View v, StatefulLayout.State state) {
+				Logcat.d("" + (state == null ? "null" : state.toString()));
 
-				// bind data
-				if(state==StatefulLayout.State.CONTENT)
-				{
-					if(mPoiList!=null && !mPoiList.isEmpty()) bindData();
-				}
+//				// bind data
+//				if (state == StatefulLayout.State.CONTENT) {
+//					if (mPoiList != null && !mPoiList.isEmpty()) bindData();
+//				}
 			}
 		});
 
@@ -511,6 +586,8 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 		Log.e(TAG, "setupMap started");
 		// reference
 		GoogleMap map = ((MapView) mRootView.findViewById(R.id.fragment_map_mapview)).getMap();
+		map.setOnCameraChangeListener(this);
+		Location location4Query = null;
 
 		// settings
 		if(map!=null)
@@ -535,12 +612,14 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 					ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 			{
 				LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-				Location location = getLastKnownLocation(locationManager);
-				if(location!=null) latLng = new LatLng(location.getLatitude(), location.getLongitude());
+				location4Query = getLastKnownLocation(locationManager);
+				if(location4Query!=null) latLng = new LatLng(location4Query.getLatitude(), location4Query.getLongitude());
 			}
 			else
 			{
 				latLng = new LatLng(mPoiLatitude, mPoiLongitude);
+				location4Query.setLongitude(mPoiLongitude);
+				location4Query.setLatitude(mPoiLatitude);
 			}
 
 			if(latLng != null)
@@ -552,12 +631,94 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 						.tilt(0)
 						.build();
 				map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-//				mDataImporter.execute();
 			}
 		}
 	}
 
+	@Override
+	public void onCameraChange (CameraPosition position)
+	{
+		GoogleMap map = ((MapView) mRootView.findViewById(R.id.fragment_map_mapview)).getMap();
+		mLastCameraPosition = position;
+		Location location4Query = null;
+
+		if ( mClusterManager == null ) // fisrt time loaded
+		{
+			setupClusterManager();
+			mIsNewCluster = true;
+
+		}
+			LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+			location4Query = getLastKnownLocation(locationManager);
+			if (null == location4Query ||
+					(0 == location4Query.getLatitude() && 0 == location4Query.getLongitude())) {
+				Log.e(TAG, "ERROR!! location4Query = null");
+			}
+
+			updateDataIfNeeded(location4Query , position);
+	}
+
+	private void updateDataIfNeeded ( Location location4Query , CameraPosition position )
+	{
+		GoogleMap map = ((MapView) mRootView.findViewById(R.id.fragment_map_mapview)).getMap();
+		mClusterManager.onCameraChange(mLastCameraPosition);
+
+		//calculate radius of visible area
+		VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
+
+		LatLng farRight = visibleRegion.farRight;
+		LatLng nearLeft = visibleRegion.nearLeft;
+
+		float[] distanceCalc = new float[2];
+		Location.distanceBetween(
+				farRight.latitude,
+				farRight.longitude,
+				nearLeft.latitude,
+				nearLeft.longitude,
+				distanceCalc);
+		float currentRadius = distanceCalc[0]/2000; // dividing by 2 -> diameter to radius , dividing by 1000 -> meter to km
+
+
+		// get center of visible map area
+		LatLng currentCenter = map.getCameraPosition().target;
+		if ( null == currentCenter ||
+			 (0 == currentCenter.latitude && 0 == currentCenter.longitude ) )
+		{
+			Log.e(TAG, "ERROR!! Invalid currentCenter Coordinates ");
+		}
+
+		// calculate distance between current center and previus center
+		float distanceBetweenCenters = 0;
+		if( 0 == mPrevCenter.latitude && 0 == mPrevCenter.longitude ) // first time showing an area on the map
+		{
+			distanceBetweenCenters = mPrevRadius;
+		}
+		else
+		{
+			float[] centersDistanceCalc = new float[2];
+			Location.distanceBetween(
+					mPrevCenter.latitude,
+					mPrevCenter.longitude,
+					currentCenter.latitude,
+					currentCenter.longitude,
+					centersDistanceCalc);
+			distanceBetweenCenters = centersDistanceCalc[0];
+		}
+
+		// if (distance(newCenter,prevCenter) + newRadius > prevRadius) --> new area is not inclusive in old area - load POIs
+		if ( distanceBetweenCenters + currentRadius > mPrevRadius )
+		{
+			assert(location4Query == null);
+
+			// get data from server using user's location and radius of visible area
+			DataImporter dataImporter = new DataImporter(mDataImporterListener);
+			dataImporter.execute((Object)location4Query, (Object)currentRadius);
+
+			// update prevCenter and prevRadius
+			mPrevRadius = currentRadius;
+			mPrevCenter = currentCenter;
+		}
+	}
 
 	private void setupClusterManager()
 	{
@@ -568,13 +729,12 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 		if(map!=null)
 		{
 			mClusterManager = new ClusterManager<>(getActivity(), map);
-			mClusterManager.setRenderer(new DefaultClusterRenderer<PoiModel>(getActivity(), map, mClusterManager)
-			{
+			mClusterManager.setRenderer(new DefaultClusterRenderer<MainDbObjectData>(getActivity(), map, mClusterManager) {
 				@Override
-				protected void onBeforeClusterItemRendered(PoiModel poi, MarkerOptions markerOptions)
-				{
-					CategoryModel category = poi.getCategory();
-					BitmapDescriptor bitmapDescriptor = loadBitmapDescriptor(category);
+				protected void onBeforeClusterItemRendered(MainDbObjectData poi, MarkerOptions markerOptions) {
+//					CategoryModel category = poi.getCategory();
+					Integer tmpId = poi.getDiscountType();
+					BitmapDescriptor bitmapDescriptor = mId2BitmapDescriptorMap.get(poi.getDiscountType());   //loadBitmapDescriptor(category);
 
 					markerOptions.title(poi.getName());
 					markerOptions.icon(bitmapDescriptor);
@@ -582,19 +742,16 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener
 					super.onBeforeClusterItemRendered(poi, markerOptions);
 				}
 			});
-			mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<PoiModel>()
-			{
+			mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MainDbObjectData>() {
 				@Override
-				public void onClusterItemInfoWindowClick(PoiModel poiModel)
-				{
+				public void onClusterItemInfoWindowClick(MainDbObjectData poiModel) {
 					startPoiDetailActivity(poiModel.getId());
 				}
 			});
-			map.setOnCameraChangeListener(mClusterManager);
+			//map.setOnCameraChangeListener(mClusterManager);
 			map.setOnInfoWindowClickListener(mClusterManager);
 		}
 	}
-
 
 	private Location getLastKnownLocation(LocationManager locationManager)
 	{

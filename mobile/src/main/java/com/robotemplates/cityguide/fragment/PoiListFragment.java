@@ -104,7 +104,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 
 	private boolean                mLazyLoading = false;
 	private View                   mRootView;
-	private StatefulLayout mStatefulLayout;
+	private StatefulLayout         mStatefulLayout;
 	private PoiListAdapter         mAdapter;
 	private OnSearchListener       mSearchListener;
 	private ActionMode             mActionMode;
@@ -451,8 +451,8 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 				}
 
 				// calculate distances and sort
-				calculatePoiDistances();
-				sortPoiByDistance();
+//				calculatePoiDistances();
+//				sortPoiByDistance();
 
 				// show content
 				showLazyLoadingProgress(false);
@@ -810,12 +810,14 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		{
 			MergePoiList(mPoiList,mDIPoiList);
 			// create adapter
-			mAdapter = new PoiListAdapter(mPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
+//			mAdapter = new PoiListAdapter(mPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
+			mAdapter = new PoiListAdapter(mDIPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
+
 		}
 		else
 		{
 			// refill adapter
-			mAdapter.refill(mPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
+			mAdapter.refill(mDIPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
 		}
 
 		// set fixed size
@@ -1041,15 +1043,28 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	// distance from current user location to every POI in the mPoiList
 	private void calculatePoiDistances()
 	{
-		if(mLocation!=null && mPoiList!=null && !mPoiList.isEmpty())
+		if(mLocation!=null && mPoiList!=null)
 		{
-			for(int i=0; i<mPoiList.size(); i++)
+			if ( !mPoiList.isEmpty() )
 			{
-				PoiModel poi = mPoiList.get(i);
-				LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-				LatLng poiLocation = new LatLng(poi.getLatitude(), poi.getLongitude());
-				int distance = LocationUtility.getDistance(myLocation, poiLocation);
-				poi.setDistance(distance);
+				for (int i = 0; i < mPoiList.size(); i++) {
+					PoiModel poi = mPoiList.get(i);
+					LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+					LatLng poiLocation = new LatLng(poi.getLatitude(), poi.getLongitude());
+					int distance = LocationUtility.getDistance(myLocation, poiLocation);
+					poi.setDistance(distance);
+				}
+			}
+			if ( !mDIPoiList.isEmpty() )
+			{
+				for (int i = 0; i < mDIPoiList.size(); i++)
+				{
+					MainDbObjectData poi = mDIPoiList.get(i);
+					LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+					LatLng poiLocation = poi.getPosition();//(poi.getLatitude(), poi.getLongitude());
+					int distance = LocationUtility.getDistance(myLocation, poiLocation);
+					poi.setDistance(distance);
+				}
 			}
 		}
 	}

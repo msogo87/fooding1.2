@@ -81,7 +81,8 @@ public final class LocationUtility
 	{
 		Locale locale = Locale.getDefault();
 		String countryCode = locale.getCountry();
-		return (!"US".equals(countryCode) && !"LR".equals(countryCode) && !"MM".equals(countryCode));
+//		return (!"US".equals(countryCode) && !"LR".equals(countryCode) && !"MM".equals(countryCode));
+		return true;
 	}
 	
 	
