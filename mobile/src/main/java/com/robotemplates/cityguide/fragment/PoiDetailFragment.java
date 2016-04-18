@@ -17,6 +17,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -48,6 +49,9 @@ import com.robotemplates.cityguide.CityGuideConfig;
 import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.activity.MapActivity;
 import com.robotemplates.cityguide.activity.PoiDetailActivity;
+import com.robotemplates.cityguide.communication.DataImporter;
+import com.robotemplates.cityguide.communication.DataImporterListener;
+import com.robotemplates.cityguide.communication.MainDbObjectData;
 import com.robotemplates.cityguide.database.DatabaseCallListener;
 import com.robotemplates.cityguide.database.DatabaseCallManager;
 import com.robotemplates.cityguide.database.DatabaseCallTask;
@@ -68,37 +72,48 @@ import com.robotemplates.cityguide.utility.PermissionUtility;
 import com.robotemplates.cityguide.utility.ResourcesUtility;
 import com.robotemplates.cityguide.view.ObservableStickyScrollView;
 import com.robotemplates.cityguide.view.StatefulLayout;
+import com.robotemplates.cityguide.common.QueryTypeEnum;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
 
-public class PoiDetailFragment extends TaskFragment implements DatabaseCallListener, GeolocationListener
+public class PoiDetailFragment extends TaskFragment implements DataImporterListener, DatabaseCallListener, GeolocationListener
 {
-	private static final String DIALOG_ABOUT = "about";
-	private static final long TIMER_DELAY = 60000L; // in milliseconds
-	private static final int MAP_ZOOM = 14;
+	private static final String    DIALOG_ABOUT    = "about";
+	private static final String    TAG             = "PoiDetailFragment";
+	private static final long      TIMER_DELAY     = 60000L; // in milliseconds
+	private static final int       MAP_ZOOM        = 14;
 
-	private View mRootView;
-	private StatefulLayout mStatefulLayout;
-	private DatabaseCallManager mDatabaseCallManager = new DatabaseCallManager();
-	private ImageLoader mImageLoader = ImageLoader.getInstance();
-	private DisplayImageOptions mDisplayImageOptions;
-	private ImageLoadingListener mImageLoadingListener;
-	private Geolocation mGeolocation = null;
-	private Location mLocation = null;
-	private Handler mTimerHandler;
-	private Runnable mTimerRunnable;
-	private long mPoiId;
-	private PoiModel mPoi;
-
+	private View                   mRootView;
+	private StatefulLayout         mStatefulLayout;
+	private DatabaseCallManager    mDatabaseCallManager  = new DatabaseCallManager();
+	private ImageLoader            mImageLoader          = ImageLoader.getInstance();
+	private DisplayImageOptions    mDisplayImageOptions;
+	private ImageLoadingListener   mImageLoadingListener;
+	private Geolocation            mGeolocation          = null;
+	private Location               mLocation             = null;
+	private Handler                mTimerHandler;
+	private Runnable               mTimerRunnable;
+	private Integer                mPoiId;
+//	private PoiModel               mPoi;
+	private MainDbObjectData       mPoi;
+	private DataImporterListener   mDataImporterListener = this;
+	private TaskFragment           TaskFragmentListener = this;
+	private Location               mUserLocation = null;
 	
 	@Override
 	public void onAttach(Context context)
 	{
 		super.onAttach(context);
 	}
-	
+
+//	public enum Query {
+//		QUERY_LIST,
+//		QUERY_MAP,
+//		QUERY_POI
+//	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) 
@@ -142,10 +157,71 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 		PermissionUtility.checkPermissionAll(this);
 
 		// init timer task
-		setupTimer();
+//		setupTimer();                         // IMPORTANT!! FOR SOME REASON SETUPTIMER IS REQUIRED!!!
+
+		LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+		mUserLocation = getLastKnownLocation(locationManager);
+
+		// get data from server using user's location and radius of visible area
+		DataImporter dataImporter = new DataImporter(mDataImporterListener);
+		dataImporter.execute(QueryTypeEnum.QUERY_POI, mPoiId);
+
 	}
-	
-	
+
+	private Location getLastKnownLocation(LocationManager locationManager)
+	{
+		Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		Location locationGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+		long timeNet = 0L;
+		long timeGps = 0L;
+
+		if(locationNet!=null)
+		{
+			timeNet = locationNet.getTime();
+		}
+
+		if(locationGps!=null)
+		{
+			timeGps = locationGps.getTime();
+		}
+
+		if(timeNet>timeGps) return locationNet;
+		else return locationGps;
+	}
+
+
+	@Override
+	public void onDataImporterTaskCompleted(final List<MainDbObjectData> dIpoiList)
+	{
+		runTaskCallback(new Runnable()
+		{
+			public void run()
+			{
+				Log.e(TAG, "DataImporeter callback start...");
+				if ( dIpoiList.size() != 1)
+				{
+					Log.e(TAG, "ERROR!!  DataImporeter callback returned with " + dIpoiList.size() + " POIs instead of 1" );
+				}
+				mPoi = dIpoiList.get(0);
+
+				// hide progress and bind data
+				if(mPoi!=null) mStatefulLayout.showContent();
+				else mStatefulLayout.showEmpty();
+
+				// check permissions
+				PermissionUtility.checkPermissionAll(TaskFragmentListener);
+			}
+		});
+	}
+
+	@Override
+	public void onDataImporterTaskFailed(int retVal)
+	{
+
+	}
+
+
 	@Override
 	public void onStart()
 	{
@@ -159,7 +235,7 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 		super.onResume();
 
 		// timer
-		startTimer();
+		//startTimer();
 	}
 	
 	
@@ -169,7 +245,7 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 		super.onPause();
 
 		// timer
-		stopTimer();
+		//stopTimer();
 
 		// stop geolocation
 		if(mGeolocation!=null) mGeolocation.stop();
@@ -312,23 +388,23 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 		{
 			public void run()
 			{
-				if(mRootView == null) return; // view was destroyed
-
-				if(task.getQuery().getClass().equals(PoiReadQuery.class))
-				{
-					Logcat.d("PoiReadQuery");
-
-					// get data
-					Data<PoiModel> poiReadData = (Data<PoiModel>) data;
-					mPoi = poiReadData.getDataObject();
-				}
-
-				// hide progress and bind data
-				if(mPoi!=null) mStatefulLayout.showContent();
-				else mStatefulLayout.showEmpty();
-
-				// finish query
-				mDatabaseCallManager.finishTask(task);
+//				if(mRootView == null) return; // view was destroyed
+//
+//				if(task.getQuery().getClass().equals(PoiReadQuery.class))
+//				{
+//					Logcat.d("PoiReadQuery");
+//
+//					// get data
+//					Data<PoiModel> poiReadData = (Data<PoiModel>) data;
+//					mPoi = poiReadData.getDataObject();
+//				}
+//
+//				// hide progress and bind data
+//				if(mPoi!=null) mStatefulLayout.showContent();
+//				else mStatefulLayout.showEmpty();
+//
+//				// finish query
+//				mDatabaseCallManager.finishTask(task);
 			}
 		});
 	}
@@ -402,7 +478,9 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 
 	private void handleExtras(Bundle extras)
 	{
-		mPoiId = extras.getLong(PoiDetailActivity.EXTRA_POI_ID);
+		Long temp;
+		mPoiId = (int) extras.getLong(PoiDetailActivity.EXTRA_POI_ID);
+//		mPoiId = (int)(long)temp;
 	}
 
 	
@@ -631,16 +709,16 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 			@Override
 			public void onClick(View v)
 			{
-				try
-				{
+//				try
+//				{
 					mPoi.setFavorite(!mPoi.isFavorite());
-					PoiDAO.update(mPoi);
+					//PoiDAO.update(mPoi);
 					floatingActionButton.setImageDrawable(mPoi.isFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
-				}
-				catch(SQLException e)
-				{
-					e.printStackTrace();
-				}
+//				}
+//				catch(SQLException e)
+//				{
+//					e.printStackTrace();
+//				}
 			}
 		});
 	}
@@ -982,7 +1060,7 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 
 	private void setupTimer()
 	{
-		mTimerHandler = new Handler();
+		mTimerHandler  = new Handler();
 		mTimerRunnable = new Runnable()
 		{
 			@Override
@@ -1083,7 +1161,7 @@ public class PoiDetailFragment extends TaskFragment implements DatabaseCallListe
 	}
 
 
-	private void startMapActivity(PoiModel poi)
+	private void startMapActivity(MainDbObjectData poi)
 	{
 		Intent intent = MapActivity.newIntent(getActivity(), poi.getId(), poi.getLatitude(), poi.getLongitude());
 		startActivity(intent);

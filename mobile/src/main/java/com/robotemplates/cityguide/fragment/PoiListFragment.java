@@ -55,6 +55,7 @@ import com.robotemplates.cityguide.activity.MapActivity;
 import com.robotemplates.cityguide.activity.PoiDetailActivity;
 import com.robotemplates.cityguide.adapter.PoiListAdapter;
 import com.robotemplates.cityguide.adapter.SearchSuggestionAdapter;
+import com.robotemplates.cityguide.common.QueryTypeEnum;
 import com.robotemplates.cityguide.communication.DataImporter;
 import com.robotemplates.cityguide.communication.MainDbObjectData;
 import com.robotemplates.cityguide.content.PoiSearchRecentSuggestionsProvider;
@@ -113,7 +114,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	private Location               mLocation = null;
 	private Handler                mTimerHandler;
 	private Runnable               mTimerRunnable;
-	private DataImporter           mDataImporter;
+//	private DataImporter           mDataImporter;
 	private long                   mCategoryId;
 	private String                 mSearchQuery;
 	private List<PoiModel>         mPoiList = new ArrayList<>();
@@ -388,7 +389,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		int poiPosition = mAdapter.getPoiPosition(position);
 
 		// start activity
-		PoiModel poi = mPoiList.get(poiPosition);
+		MainDbObjectData poi = mDIPoiList.get(poiPosition);
 		startPoiDetailActivity(view, poi.getId());
 	}
 
@@ -526,7 +527,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 //				if (mLocation == null) // TODO: if condition might be irrelevant
 //				{
 				DataImporter dataImporter = new DataImporter(mDataImporterListener);
-				dataImporter.execute(location);
+				dataImporter.execute(QueryTypeEnum.QUERY_LIST, location);
 //				}
 				mLocation = location;
 

@@ -43,6 +43,7 @@ import com.robotemplates.cityguide.CityGuideConfig;
 import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.activity.MapActivity;
 import com.robotemplates.cityguide.activity.PoiDetailActivity;
+import com.robotemplates.cityguide.common.QueryTypeEnum;
 import com.robotemplates.cityguide.communication.DataImporter;
 import com.robotemplates.cityguide.communication.DataImporterListener;
 import com.robotemplates.cityguide.communication.MainDbObjectData;
@@ -712,7 +713,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 			// get data from server using user's location and radius of visible area
 			DataImporter dataImporter = new DataImporter(mDataImporterListener);
-			dataImporter.execute((Object)location4Query, (Object)currentRadius);
+			dataImporter.execute(QueryTypeEnum.QUERY_MAP, (Object)location4Query, (Object)currentRadius);
 
 			// update prevCenter and prevRadius
 			mPrevRadius = currentRadius;
