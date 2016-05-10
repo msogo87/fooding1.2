@@ -226,6 +226,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	@Override
 	public void onStart()
 	{
+		Log.e(TAG,"Starting");
 		super.onStart();
 	}
 	
@@ -233,16 +234,33 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	@Override
 	public void onResume()
 	{
+		Log.e(TAG,"Resuming");
 		super.onResume();
-
-		// timer
+//		if (mDIPoiList != null && !mDIPoiList.isEmpty()) mStatefulLayout.showContent();
+		// timerrestoreInstanceState();
 		startTimer();
 	}
-	
+
+//	public void setUserVisibleHint(boolean isVisibleToUser) {
+//		super.setUserVisibleHint(isVisibleToUser);
+//
+//		if (isVisibleToUser && mIsFirstTimeViwed)
+//		{
+//			if ( true == mIsFirstTimeViwed ) {
+//				mIsFirstTimeViwed = false;
+//				OnResu
+//			}
+//		}
+//		else
+//		{
+//			onSaveInstanceState
+//		}
+//	}
 	
 	@Override
 	public void onPause()
 	{
+		Log.e(TAG,"Pausing");
 		super.onPause();
 
 		// timer
@@ -259,6 +277,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	@Override
 	public void onStop()
 	{
+		Log.e(TAG,"Stopping");
 		super.onStop();
 	}
 	
@@ -284,6 +303,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	@Override
 	public void onDetach()
 	{
+		Log.e(TAG,"Detaching");
 		super.onDetach();
 	}
 	
@@ -292,8 +312,9 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	public void onSaveInstanceState(Bundle outState)
 	{
 		// save current instance state
+		Log.e(TAG,"Seving state");
 		super.onSaveInstanceState(outState);
-		setUserVisibleHint(true);
+//		setUserVisibleHint(true);
 
 		// stateful layout state
 		if(mStatefulLayout!=null) mStatefulLayout.saveInstanceState(outState);
@@ -315,9 +336,9 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		// action bar menu behavior
 		switch(item.getItemId())
 		{
-			case R.id.menu_fragment_poi_list_map:
-				startMapActivity();
-				return true;
+//			case R.id.menu_fragment_poi_list_map:
+//				startMapActivity();
+//				return true;
 
 			case R.id.menu_rate:
 				startWebActivity(getString(R.string.app_store_uri, CityGuideApplication.getContext().getPackageName()));
@@ -457,6 +478,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 
 				// show content
 				showLazyLoadingProgress(false);
+				Log.e(TAG, "mPoiList.size = " + mPoiList.size() );
 				if (mPoiList != null && !mPoiList.isEmpty()) mStatefulLayout.showContent();
 				else mStatefulLayout.showEmpty();
 
@@ -524,13 +546,13 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 				Logcat.d("onGeolocationRespond() = " + location.getProvider() + " / " + location.getLatitude() + " / " + location.getLongitude() + " / " + new Date(location.getTime()).toString());
 				Log.i(TAG, "Fragment.onGeolocationRespond(): " + location.getProvider() + " / " + location.getLatitude() + " / " + location.getLongitude() + " / " + new Date(location.getTime()).toString());
 
-//				if (mLocation == null) // TODO: if condition might be irrelevant
-//				{
-				DataImporter dataImporter = new DataImporter(mDataImporterListener);
-				dataImporter.execute(QueryTypeEnum.QUERY_LIST, location);
-//				}
+				if (mLocation == null) // TODO: if condition might be irrelevant
+				{
+					DataImporter dataImporter = new DataImporter(mDataImporterListener);
+					dataImporter.execute(QueryTypeEnum.QUERY_LIST, location);
+				}
 				mLocation = location;
-
+				Log.e(TAG, "onGeolocationRespond");
 				// calculate distances and sort
 				
 			}
@@ -545,11 +567,11 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 			public void run()
 			{
 				Log.e(TAG, "DataImporeter callback start...");
-				Log.d(TAG, "onDataImporterTaskCompleted: poiList length is: " + dIpoiList.size());
+
 				mDIPoiList = dIpoiList;
 
 				// load data
-				if(mPoiList==null || mPoiList.isEmpty()) loadData();
+//				if(mPoiList==null || mPoiList.isEmpty()) loadData();
 
 
 				// lazy loading progress
@@ -558,10 +580,15 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 				// show toolbar if hidden
 				showToolbar(true);
 
+				Log.e(TAG, "onDataImporterTaskCompleted: poiList length is: " + mDIPoiList.size() + dIpoiList.size() );
+
 				// calculate distances and sort
 				calculatePoiDistances();
 				sortPoiByDistance();
-				if(mAdapter!=null && mLocation!=null && mPoiList!=null && !mPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
+				if(mAdapter!=null && mLocation!=null && mDIPoiList!=null && !mDIPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
+				Log.e(TAG, "DataImporeter callback end");
+				if (mDIPoiList != null && !mDIPoiList.isEmpty()) mStatefulLayout.showContent();
+//				else mStatefulLayout.showEmpty();
 			}
 		});
 	}
@@ -728,41 +755,41 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 						}
 					});
 		}
-		else
-		{
-			toolbar.animate()
-					.translationY(-toolbar.getBottom())
-					.setDuration(200)
-					.setInterpolator(new AccelerateDecelerateInterpolator())
-					.setListener(new Animator.AnimatorListener()
-					{
-						@Override
-						public void onAnimationStart(Animator animator)
-						{
-							toolbar.setEnabled(false);
-						}
-
-
-						@Override
-						public void onAnimationEnd(Animator animator)
-						{
-							toolbar.setVisibility(View.GONE);
-							toolbar.setEnabled(true);
-						}
-
-
-						@Override
-						public void onAnimationCancel(Animator animator)
-						{
-						}
-
-
-						@Override
-						public void onAnimationRepeat(Animator animator)
-						{
-						}
-					});
-		}
+//		else
+//		{
+//			toolbar.animate()
+//					.translationY(-toolbar.getBottom())
+//					.setDuration(200)
+//					.setInterpolator(new AccelerateDecelerateInterpolator())
+//					.setListener(new Animator.AnimatorListener()
+//					{
+//						@Override
+//						public void onAnimationStart(Animator animator)
+//						{
+//							toolbar.setEnabled(false);
+//						}
+//
+//
+//						@Override
+//						public void onAnimationEnd(Animator animator)
+//						{
+//							toolbar.setVisibility(View.GONE);
+//							toolbar.setEnabled(true);
+//						}
+//
+//
+//						@Override
+//						public void onAnimationCancel(Animator animator)
+//						{
+//						}
+//
+//
+//						@Override
+//						public void onAnimationRepeat(Animator animator)
+//						{
+//						}
+//					});
+//		}
 	}
 
 
@@ -805,11 +832,12 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		// reference
 		final RecyclerView recyclerView = getRecyclerView();
 		final FloatingActionButton floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-
+		Log.e(TAG, "Bind Data");
 		// content
 		if(recyclerView.getAdapter()==null)
 		{
-			MergePoiList(mPoiList,mDIPoiList);
+			Log.e(TAG, "Bind Data: create adapter");
+//			MergePoiList(mPoiList,mDIPoiList);
 			// create adapter
 //			mAdapter = new PoiListAdapter(mPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
 			mAdapter = new PoiListAdapter(mDIPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
@@ -817,6 +845,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		}
 		else
 		{
+			Log.e(TAG, "Bind Data: refill adapter");
 			// refill adapter
 			mAdapter.refill(mDIPoiList, mFooterList, this, 1/*getGridSpanCount()*/);
 		}
@@ -896,7 +925,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 						// hide toolbar
 						if(mToolbar.getVisibility() == View.VISIBLE && mToolbar.isEnabled())
 						{
-							showToolbar(false);
+//							showToolbar(false);
 						}
 
 						// hide FAB
@@ -932,6 +961,8 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 				mActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(new SearchActionModeCallback());
 			}
 		});
+
+		Log.e(TAG, "Bind Data");
 
 		// admob
 		bindDataBanner();
@@ -988,17 +1019,20 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 			public void onStateChange(View v, StatefulLayout.State state)
 			{
 				Logcat.d("" + (state == null ? "null" : state.toString()));
-
+				Log.e(TAG, "setupStatefulLayout: state is " + state);
 				// bind data
 				if(state == StatefulLayout.State.CONTENT)
 				{
+					Log.e(TAG, "state");
 					if(mLazyLoading && mAdapter != null)
 					{
+						Log.e(TAG, "notifyDataSetChanged");
 						mAdapter.notifyDataSetChanged();
 					}
 					else
 					{
-						if(mPoiList!=null && !mPoiList.isEmpty()) bindData();
+						Log.e(TAG, "bind data state");
+						if(mDIPoiList!=null && !mDIPoiList.isEmpty()) bindData();
 					}
 				}
 
@@ -1024,7 +1058,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 		RecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(linearLayoutManager);
-
+		recyclerView.setHasFixedSize(true);
 	}
 
 	// return the view position in the gridView

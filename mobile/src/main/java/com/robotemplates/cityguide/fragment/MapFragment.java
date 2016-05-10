@@ -98,6 +98,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 	private float mPrevRadius = 0;
 	private boolean mIsNewCluster = false;
 	private CameraPosition mLastCameraPosition = null;
+	private boolean mIsFirstTimeViwed = true;
 
 	@Override
 	public void onAttach(Context context)
@@ -142,18 +143,40 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 		initId2BitmapDescriptorMap();
 
-		// setup map
-		setupMap();
-//		setupClusterManager();
-
+//		// setup map
+//		setupMap();
+////		setupClusterManager();
+//
 		// setup stateful layout
 		setupStatefulLayout(savedInstanceState);
+//
+//		if (mPoiList == null || mPoiList.isEmpty()) loadData();
+//
+//		// check permissions
+//		PermissionUtility.checkPermissionAccessLocation(this);
 
-		if (mPoiList == null || mPoiList.isEmpty()) loadData();
+	}
 
-		// check permissions
-		PermissionUtility.checkPermissionAccessLocation(this);
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
 
+		if (isVisibleToUser)
+		{
+			if (mIsFirstTimeViwed) {
+				mIsFirstTimeViwed = false;
+				// setup map
+				setupMap();
+
+				if (mPoiList == null || mPoiList.isEmpty()) loadData();
+
+				// check permissions
+				PermissionUtility.checkPermissionAccessLocation(this);
+			}
+		}
+		else
+		{
+
+		}
 	}
 
 	public void initId2BitmapDescriptorMap ()
@@ -625,6 +648,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 			if(latLng != null)
 			{
+				Log.e(TAG, "Map Camera zoom" );
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(latLng)
 						.zoom(MAP_ZOOM)
@@ -655,8 +679,9 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 					(0 == location4Query.getLatitude() && 0 == location4Query.getLongitude())) {
 				Log.e(TAG, "ERROR!! location4Query = null");
 			}
-
-			updateDataIfNeeded(location4Query , position);
+			else {
+				updateDataIfNeeded(location4Query, position);
+			}
 	}
 
 	private void updateDataIfNeeded ( Location location4Query , CameraPosition position )
@@ -756,6 +781,11 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 	private Location getLastKnownLocation(LocationManager locationManager)
 	{
+//		if ( !PermissionUtility.checkPermissionAccessLocation(this) ) {
+//			Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//			Location locationGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//		}
+
 		Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		Location locationGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
@@ -780,6 +810,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 	private void setMapType(int type)
 	{
 		GoogleMap map = ((MapView) mRootView.findViewById(R.id.fragment_map_mapview)).getMap();
+
 		if(map!=null)
 		{
 			map.setMapType(type);

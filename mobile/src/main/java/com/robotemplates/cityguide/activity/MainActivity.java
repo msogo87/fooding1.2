@@ -4,9 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,6 +21,7 @@ import android.view.Gravity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+//import android.app.Fragment;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.robotemplates.cityguide.CityGuideApplication;
@@ -26,6 +30,8 @@ import com.robotemplates.cityguide.adapter.DrawerAdapter;
 import com.robotemplates.cityguide.communication.DataImporter;
 import com.robotemplates.cityguide.database.dao.CategoryDAO;
 import com.robotemplates.cityguide.database.model.CategoryModel;
+import com.robotemplates.cityguide.fragment.FavoritesFragment;
+import com.robotemplates.cityguide.fragment.MapFragment;
 import com.robotemplates.cityguide.fragment.PoiListFragment;
 import com.robotemplates.cityguide.listener.OnSearchListener;
 import com.robotemplates.cityguide.utility.ResourcesUtility;
@@ -44,10 +50,13 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 	private DrawerLayout           mDrawerLayout;
 	private ActionBarDrawerToggle  mDrawerToggle;
 	private ScrimInsetsFrameLayout mDrawerScrimInsetsFrameLayout;
-	private DrawerAdapter mDrawerAdapter;
-	private CharSequence mTitle;
-	private CharSequence mDrawerTitle;
-	private List<CategoryModel> mCategoryList;
+	private DrawerAdapter          mDrawerAdapter;
+	private CharSequence           mTitle;
+	private CharSequence           mDrawerTitle;
+	private List<CategoryModel>    mCategoryList;
+	private TabLayout              mTabLayout;// = (TabLayout) findViewById(R.id.tabs);
+	private ViewPager              mViewPager;// = (ViewPager) findViewById(R.id.viewpager);
+	private Fragment               mPoiListFragment;
 
 
 	public static Intent newIntent(Context context)
@@ -64,15 +73,74 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 		Log.e(TAG, "MainActivity start");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
 		setupActionBar();
+
+		// configure side sliding drawer
 		setupRecyclerView();
 		setupDrawer(savedInstanceState);
+
+		// configure tabs
+//		ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+//		setupViewPager(viewPager);
+
+//		TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+//		tabLayout.setupWithViewPager(viewPager);
+
+		mViewPager = (ViewPager) findViewById(R.id.viewpager);
+		setupViewPager(mViewPager);
+
+		mTabLayout = (TabLayout) findViewById(R.id.tabs);
+		mTabLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				mTabLayout.setupWithViewPager(mViewPager);
+			}
+		});
 
 		// init analytics tracker
 		((CityGuideApplication) getApplication()).getTracker();
 	}
-	
-	
+
+	private void setupViewPager(ViewPager viewPager) {
+		ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager()); // getSupportFragmentManager()); // getChildFragmentManager()
+		mPoiListFragment = new PoiListFragment();
+		adapter.addFragment(mPoiListFragment       , "Deals");
+		adapter.addFragment(new MapFragment()      , "Map");
+		adapter.addFragment(new FavoritesFragment(), "Favorites");
+		viewPager.setAdapter(adapter);
+		viewPager.setOffscreenPageLimit(2); // 2 tabs that are in the background will not be destroyed
+	}
+
+	class ViewPagerAdapter extends FragmentPagerAdapter {
+		private final List<Fragment> mFragmentList      = new ArrayList<>();
+		private final List<String>   mFragmentTitleList = new ArrayList<>();
+
+		public ViewPagerAdapter(FragmentManager manager) {
+			super(manager);
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			return mFragmentList.get(position);
+		}
+
+		@Override
+		public int getCount() {
+			return mFragmentList.size();
+		}
+
+		public void addFragment(Fragment fragment, String title) {
+			mFragmentList.add(fragment);
+			mFragmentTitleList.add(title);
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			return mFragmentTitleList.get(position);
+		}
+	}
+
 	@Override
 	public void onStart()
 	{
@@ -184,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 	{
 		Fragment fragment = PoiListFragment.newInstance(query);
 		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction().replace(R.id.container_drawer_content, fragment).commitAllowingStateLoss();
+//		fragmentManager.beginTransaction().replace(R.id.container_drawer_content, fragment).commitAllowingStateLoss();
 
 		mDrawerAdapter.setSelected(mDrawerAdapter.getRecyclerPositionByCategory(0));
 		setTitle(getString(R.string.title_search) + ": " + query);
@@ -252,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.activity_main_drawer_layout);
 		mDrawerScrimInsetsFrameLayout = (ScrimInsetsFrameLayout) findViewById(R.id.activity_main_drawer_scrim_layout);
 
-		// set drawer - the sliding in menu
+		// set drawer - the sliding menu
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 		mDrawerLayout.setStatusBarBackgroundColor(ResourcesUtility.getValueOfAttribute(this, R.attr.colorPrimaryDark));
 		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close)
@@ -276,19 +344,24 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 		// show initial fragment
 		if(savedInstanceState == null)
 		{
-			selectDrawerItem(0);
+			//selectDrawerItem(0);
 		}
 	}
 
 
 	private void selectDrawerItem(int position)
 	{
-		Fragment fragment = PoiListFragment.newInstance(mCategoryList.get(position).getId());
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction().replace(R.id.container_drawer_content, fragment).commitAllowingStateLoss();
+//		Fragment fragment = PoiListFragment.newInstance(mCategoryList.get(position).getId());
+//		FragmentManager fragmentManager = getSupportFragmentManager();
+//		fragmentManager.beginTransaction().replace(R.id.viewpager, fragment).commitAllowingStateLoss();
+
+//		Fragment fragment = (mViewPager.getAdapter()).getItem(0); // add view page adapter
+//		Fragment fragment = PoiListFragment.newInstance(mCategoryList.get(position).getId());
+		mPoiListFragment = PoiListFragment.newInstance(1);
 
 		mDrawerAdapter.setSelected(mDrawerAdapter.getRecyclerPositionByCategory(position));
-		setTitle(mCategoryList.get(position).getName());
+		//setTitle(mCategoryList.get(position).getName());
+		setTitle("EatUp!");
 		mDrawerLayout.closeDrawer(mDrawerScrimInsetsFrameLayout);
 	}
 

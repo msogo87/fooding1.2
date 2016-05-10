@@ -31,11 +31,12 @@
 	Don't forget to modify also MainActivity's theme.
 	-->
 
+	<!-- "@style/Theme.CityGuide.Indigo" -->
 	<application
 		android:name=".CityGuideApplication"
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
-		android:theme="@style/Theme.CityGuide.Indigo"
+		android:theme="@style/MyMaterialTheme"
 		android:hardwareAccelerated="true"
 		android:allowBackup="true"
 		tools:replace="android:icon">

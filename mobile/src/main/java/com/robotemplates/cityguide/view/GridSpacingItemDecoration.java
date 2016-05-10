@@ -29,11 +29,11 @@ public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration
 		// top offset
 		if(position < spanCount)
 		{
-			outRect.top = mSpacing;
+			outRect.top = 0; // mSpacing; // 50; //mSpacing;
 		}
 		else
 		{
-			outRect.top = mSpacing/2;
+			outRect.top = mSpacing/2 ;
 		}
 
 		// bottom offset

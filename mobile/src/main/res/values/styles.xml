@@ -157,4 +157,22 @@
 		<item name="android:textColorLink">?android:attr/textColorLinkInverse</item>
 	</style>
 
+	<!-- Styles for tab view  -->
+	<style name="MyMaterialTheme" parent="MyMaterialTheme.Base">
+
+	</style>
+
+	<style name="MyMaterialTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowNoTitle">true</item>
+		<item name="windowActionBar">false</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+		<!-- Added to example in order to not break the build -->
+		<item name="alertDialogTheme">@style/Theme.CityGuide.Yellow.Dialog.Alert</item>
+		<item name="colorControlActivated">@color/global_color_yellow_control_activated</item>
+	</style>
+
+
+
 </resources>

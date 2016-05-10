@@ -106,6 +106,8 @@ public class DataImporter extends AsyncTask<Object, Integer, Integer>
                 return null;
         }
 
+        //TODO: add checker for null location ( GPS is off )
+
         if ( queryType == QueryTypeEnum.QUERY_LIST || queryType == QueryTypeEnum.QUERY_MAP ) {
             if (0 == mLocation.getLatitude() || 0 == mLocation.getLongitude()) {
                 Log.e(TAG, "doInBackground: Error in lng-lat values: Latitude: " + mLocation.getLatitude() +
@@ -186,7 +188,7 @@ public class DataImporter extends AsyncTask<Object, Integer, Integer>
 
                 //Read the server response and attempt to parse it as JSON
                 mPoiList = Arrays.asList(gson.fromJson(responseString.toString(), MainDbObjectData[].class));
-                Log.e(TAG, "Got POI list from remote server");
+                Log.e(TAG, "Got POI list from remote server. list size is: " + mPoiList.size() );
                 Log.e(TAG, "DataImporeter Execcute end");
             }
             catch (Exception ex)
@@ -218,6 +220,7 @@ public class DataImporter extends AsyncTask<Object, Integer, Integer>
         {
             if(mPoiList != null)
             {
+                Log.e(TAG, "calling onDataImporterTaskCompleted with mPoiList.size:" + mPoiList.size());
                 listener.onDataImporterTaskCompleted(mPoiList);
             }
             else

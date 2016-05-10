@@ -68,4 +68,17 @@
 	<dimen name="fragment_poi_detail_info_item_padding">12dp</dimen>
 
 	<dimen name="fragment_map_marker_size">42dp</dimen>
+
+
+
+	<!-- Default screen margins, per the Android Design guidelines. -->
+	<!-- Dimensions for tab view  -->
+	<dimen name="activity_horizontal_margin">16dp</dimen>
+	<dimen name="activity_vertical_margin">16dp</dimen>
+	<dimen name="tab_max_width">264dp</dimen>
+	<dimen name="tab_padding_bottom">16dp</dimen>
+	<dimen name="tab_label">14sp</dimen>
+	<dimen name="custom_tab_layout_height">72dp</dimen>
+
+
 </resources>

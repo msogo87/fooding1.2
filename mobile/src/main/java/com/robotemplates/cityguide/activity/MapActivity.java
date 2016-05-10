@@ -15,8 +15,8 @@ import com.robotemplates.cityguide.R;
 
 public class MapActivity extends AppCompatActivity
 {
-	public static final String EXTRA_POI_ID = "poi_id";
-	public static final String EXTRA_POI_LATITUDE = "poi_latitude";
+	public static final String EXTRA_POI_ID        = "poi_id";
+	public static final String EXTRA_POI_LATITUDE  = "poi_latitude";
 	public static final String EXTRA_POI_LONGITUDE = "poi_longitude";
 
 
@@ -44,7 +44,7 @@ public class MapActivity extends AppCompatActivity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
-		setupActionBar();
+		//setupActionBar();
 
 		// init analytics tracker
 		((CityGuideApplication) getApplication()).getTracker();
