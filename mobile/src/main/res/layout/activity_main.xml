@@ -16,51 +16,16 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 
-		<com.robotemplates.cityguide.view.ScrimInsetsFrameLayout
-			android:id="@+id/activity_main_drawer_scrim_layout"
-			android:layout_width="@dimen/drawer_width"
-			android:layout_height="match_parent"
-			android:layout_gravity="start"
-			android:background="@color/global_bg_front"
-			android:fitsSystemWindows="true"
-			app:insetForeground="@color/drawer_inset_foreground">
+		<!-- Tabs and ViewPager layout (ViewPager is responsible for displaying the tab frgments) -->
+		<include layout="@layout/tabs" />
 
-			<android.support.v7.widget.RecyclerView
-				android:id="@+id/activity_main_drawer_recycler"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:scrollbars="vertical" />
+		<include layout="@layout/sliding_drawer" />
 
-		</com.robotemplates.cityguide.view.ScrimInsetsFrameLayout>
 	</android.support.v4.widget.DrawerLayout>
 	<!-- End of Sliding Drawer Layout  -->
 
-	<!-- Tabs and ViewPage layout (ViewPage is responsible for displaying the tab frgments) -->
-	<LinearLayout
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:app="http://schemas.android.com/apk/res-auto"
-		android:layout_width="match_parent"
-		android:orientation="vertical"
-		android:layout_height="wrap_content">
 
-		<include layout="@layout/toolbar" />
-
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabMode="fixed"
-            app:tabGravity="fill"
-			android:background="?attr/colorPrimary"
-            android:layout_below="@+id/toolbar"/>
-
-		<android.support.v4.view.ViewPager
-			android:id="@+id/viewpager"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-	</LinearLayout>
-
+	<!--If fab (fast action button is not needed, CoordinatorLayout is not needed too-->
 	<include layout="@layout/fab_search"/>
 
 	</android.support.design.widget.CoordinatorLayout>
