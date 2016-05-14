@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+	<item android:drawable="@color/colorSelected"  android:state_selected="true"  />
+	<item android:drawable="@color/colorPrimary"/>
+</selector>
+	<!--<item app:tabIndicatorHeight="@dimen/custom_tab_layout_height" android:state_selected="true" />-->
+	<!--<item app:tabIndicatorHeight="4dp" />-->

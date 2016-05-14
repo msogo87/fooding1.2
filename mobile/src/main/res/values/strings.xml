@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- LANGUAGE INDEPENDENT -->
-	<string name="app_name">City Guide</string>
+	<string name="app_name">EatUp!</string>
 	<string name="app_store_uri">https://play.google.com/store/apps/details?id=%1$s</string>
 
 	<!-- LANGUAGE DEPENDENT -->

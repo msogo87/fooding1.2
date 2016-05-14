@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+	<!--android:elevation="@dimen/global_elevation_xs"-->
 <android.support.v7.widget.Toolbar
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,5 +8,4 @@
 	android:layout_height="?attr/actionBarSize"
 	android:background="?attr/colorPrimary"
 	app:layout_scrollFlags="scroll|enterAlways"
-	android:elevation="@dimen/global_elevation_xs"
 	style="@style/Widget.CityGuide.Toolbar" />
