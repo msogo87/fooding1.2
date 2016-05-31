@@ -4,6 +4,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
@@ -13,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
@@ -39,6 +41,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.melnykov.fab.FloatingActionButton;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -57,6 +61,7 @@ import com.robotemplates.cityguide.database.DatabaseCallManager;
 import com.robotemplates.cityguide.database.DatabaseCallTask;
 import com.robotemplates.cityguide.database.dao.PoiDAO;
 import com.robotemplates.cityguide.database.data.Data;
+import com.robotemplates.cityguide.database.data.FavoritesDbRow;
 import com.robotemplates.cityguide.database.model.PoiModel;
 import com.robotemplates.cityguide.database.query.PoiReadQuery;
 import com.robotemplates.cityguide.database.query.Query;
@@ -74,9 +79,18 @@ import com.robotemplates.cityguide.view.ObservableStickyScrollView;
 import com.robotemplates.cityguide.view.StatefulLayout;
 import com.robotemplates.cityguide.common.QueryTypeEnum;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 
 public class PoiDetailFragment extends TaskFragment implements DataImporterListener, DatabaseCallListener, GeolocationListener
@@ -86,22 +100,23 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	private static final long      TIMER_DELAY     = 60000L; // in milliseconds
 	private static final int       MAP_ZOOM        = 14;
 
-	private View                   mRootView;
-	private StatefulLayout         mStatefulLayout;
-	private DatabaseCallManager    mDatabaseCallManager  = new DatabaseCallManager();
-	private ImageLoader            mImageLoader          = ImageLoader.getInstance();
-	private DisplayImageOptions    mDisplayImageOptions;
-	private ImageLoadingListener   mImageLoadingListener;
-	private Geolocation            mGeolocation          = null;
-	private Location               mLocation             = null;
-	private Handler                mTimerHandler;
-	private Runnable               mTimerRunnable;
-	private Integer                mPoiId;
-//	private PoiModel               mPoi;
-	private MainDbObjectData       mPoi;
-	private DataImporterListener   mDataImporterListener = this;
-	private TaskFragment           TaskFragmentListener = this;
-	private Location               mUserLocation = null;
+	private View                       mRootView;
+	private StatefulLayout             mStatefulLayout;
+	private DatabaseCallManager        mDatabaseCallManager  = new DatabaseCallManager();
+	private ImageLoader                mImageLoader          = ImageLoader.getInstance();
+	private DisplayImageOptions        mDisplayImageOptions;
+	private ImageLoadingListener       mImageLoadingListener;
+	private Geolocation                mGeolocation          = null;
+	private Location                   mLocation             = null;
+	private Handler                    mTimerHandler;
+	private Runnable                   mTimerRunnable;
+	private Integer                    mPoiId;
+	private MainDbObjectData           mPoi;
+	private DataImporterListener       mDataImporterListener = this;
+	private TaskFragment               TaskFragmentListener  = this;
+	private Location                   mUserLocation         = null;
+	private Map<Long, FavoritesDbRow>  mFavoritesPoiMap      = new HashMap<>();
+	private boolean                    isAfterPause          = true;
 	
 	@Override
 	public void onAttach(Context context)
@@ -161,6 +176,8 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 
 		LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 		mUserLocation = getLastKnownLocation(locationManager);
+
+//		GetFavoritePoiList();
 
 		// get data from server using user's location and radius of visible area
 		DataImporter dataImporter = new DataImporter(mDataImporterListener);
@@ -234,8 +251,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	{
 		super.onResume();
 
-		// timer
-		//startTimer();
+		GetFavoritePoiList();
 	}
 	
 	
@@ -244,8 +260,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	{
 		super.onPause();
 
-		// timer
-		//stopTimer();
+		isAfterPause = true;
 
 		// stop geolocation
 		if(mGeolocation!=null) mGeolocation.stop();
@@ -699,6 +714,16 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 			}
 		});
 
+        FavoritesDbRow favRow = mFavoritesPoiMap.get(mPoi.getId());
+        if ( favRow != null )
+        {
+            mPoi.setFavorite(favRow.getToggle());
+        }
+        else
+        {
+            mPoi.setFavorite(false);
+        }
+
 		// floating action button
 		ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) floatingActionButton.getLayoutParams();
 		params.topMargin = getResources().getDimensionPixelSize(R.dimen.toolbar_image_collapsed_height) - getResources().getDimensionPixelSize(R.dimen.fab_mini_size) / 2;
@@ -709,16 +734,9 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 			@Override
 			public void onClick(View v)
 			{
-//				try
-//				{
 					mPoi.setFavorite(!mPoi.isFavorite());
-					//PoiDAO.update(mPoi);
 					floatingActionButton.setImageDrawable(mPoi.isFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
-//				}
-//				catch(SQLException e)
-//				{
-//					e.printStackTrace();
-//				}
+					UpdateFavoritesList(mPoi.getId(),true, mPoi.getName(), mPoi.getImage(), mPoi.isFavorite());
 			}
 		});
 	}
@@ -727,12 +745,12 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	private void bindDataInfo()
 	{
 		// reference
-		TextView introTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_intro);
-		TextView addressTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_address);
+		TextView introTextView    = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_intro);
+		TextView addressTextView  = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_address);
 		TextView distanceTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_distance);
-		TextView linkTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_link);
-		TextView phoneTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_phone);
-		TextView emailTextView = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_email);
+		TextView linkTextView     = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_link);
+		TextView phoneTextView    = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_phone);
+		TextView emailTextView    = (TextView) mRootView.findViewById(R.id.fragment_poi_detail_info_email);
 
 		// intro
 		if(mPoi.getIntro()!=null && !mPoi.getIntro().trim().equals(""))
@@ -1248,4 +1266,90 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 			// can't start activity
 		}
 	}
+
+	private void GetFavoritePoiList()
+	{
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+		Gson gson = new Gson();
+		String json = sharedPrefs.getString("FAV", null);
+        if ( json == null)
+        {
+            Log.e(TAG, "Error in SaveFavoriteList");
+            return;
+        }
+		Type type = new TypeToken<Map<Long, FavoritesDbRow>>() {}.getType();
+        mFavoritesPoiMap = gson.fromJson(json, type);
+
+//        Map<Long, FavoritesDbRow> favoritesMap = null;
+//        try {
+//            // create an ObjectInputStream for the file we created before
+//            ObjectInputStream ois =
+//                    new ObjectInputStream(new FileInputStream("test.txt"));
+//
+//            // read and print an object and cast it as string
+//            System.out.println("" + (Map<Long, FavoritesDbRow>) ois.readObject());
+//
+//            // read and print an object and cast it as string
+//            favoritesMap = (Map<Long, FavoritesDbRow>) ois.readObject();
+//
+//        } catch (Exception ex){
+//            Log.e(TAG, "Error in SaveFavoriteList");
+//        }
+
+	}
+
+	private void SaveFavoriteList()
+	{
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		Gson gson = new Gson();
+
+		String json = gson.toJson(mFavoritesPoiMap);
+
+		editor.putString("FAV", json);
+//        editor.remove("FAV");
+		editor.commit();
+
+
+//        try {
+//            // create a new file with an ObjectOutputStream
+//            FileOutputStream out = new FileOutputStream("test.txt");
+//            ObjectOutputStream oout = new ObjectOutputStream(out);
+//
+//            // write something in the file
+//            oout.writeObject(mFavoritesPoiMap);
+//            oout.flush();
+//        } catch (Exception ex){
+//                Log.e(TAG, "Error in SaveFavoriteList");
+//            }
+
+	}
+
+	private void UpdateFavoritesList(long id, boolean isShowNotification, String poiName, String picUrl, boolean isAddFavPoi)
+	{
+		if ( isAfterPause ) {
+			// get list of favorite POIs list
+			GetFavoritePoiList();
+			isAfterPause = false;
+		}
+
+		// mFavoritesPoiList doesn't exist, create it
+		if ( mFavoritesPoiMap == null )
+		{
+            mFavoritesPoiMap = new HashMap<>();
+		}
+
+		// update favorite POIs list with new entry
+        if ( isAddFavPoi )
+        {
+            mFavoritesPoiMap.put(id, new FavoritesDbRow(id, isShowNotification, poiName, picUrl));
+        }
+        else {
+            mFavoritesPoiMap.remove(id);
+        }
+
+		// save favorite POIs list
+		SaveFavoriteList();
+	}
 }
+

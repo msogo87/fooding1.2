@@ -39,6 +39,7 @@
 		android:theme="@style/MyMaterialTheme"
 		android:hardwareAccelerated="true"
 		android:allowBackup="true"
+		android:supportsRtl="true"
 		tools:replace="android:icon">
 
 		<!--

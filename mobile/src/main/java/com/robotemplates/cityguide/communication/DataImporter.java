@@ -50,9 +50,9 @@ public class DataImporter extends AsyncTask<Object, Integer, Integer>
     private MainDbObjectData mPoi = null;
     private QueryTypeEnum queryType;
 
-    private static final String SERVER_URL_4_LIST_QUERY = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
-    private static final String SERVER_URL_4_MAP_QUERY  = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
-    private static final String SERVER_URL_4_POI_QUERY  = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";       // IMPORTATNT!! : This was public for some reason  // Works with Genymotion
+    private static final String SERVER_URL_4_LIST_QUERY = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";  // Works with Genymotion
+    private static final String SERVER_URL_4_MAP_QUERY  = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";  // Works with Genymotion
+    private static final String SERVER_URL_4_POI_QUERY  = "http://10.0.3.2/fooding/queryPreviewDbByLocation.php";  // Works with Genymotion
 //    public static final String SERVER_URL = "http://localhost/fooding/queryPreviewDbByLocation.php";
 //    public static final String SERVER_URL = "http://192.168.1.6:8080/fooding/queryPreviewDbByLocation.php";
 //    public static final String SERVER_URL = "http://kylewbanks.com/rest/posts";                                // random server for checking connection

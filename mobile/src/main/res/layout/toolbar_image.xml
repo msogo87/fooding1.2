@@ -29,20 +29,23 @@
 			android:tag="sticky-hastransparancy-nonconstant">
 
 			<TextView
-				android:id="@+id/toolbar_image_title"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="bottom"
-				android:layout_marginLeft="@dimen/toolbar_image_title_margin_left"
-				android:layout_marginRight="@dimen/global_spacing_xs"
-				android:layout_marginBottom="@dimen/global_spacing_xs"
-				android:paddingRight="@dimen/toolbar_image_title_padding_right"
-				android:paddingBottom="@dimen/global_spacing_xs"
-				android:textAppearance="@style/TextAppearance.CityGuide.Title.Inverse"
-				android:maxLines="2"
-				android:ellipsize="end"
-				android:shadowColor="@android:color/black"
-				android:shadowRadius="16" />
+				android:id                  ="@+id/toolbar_image_title"
+				android:layout_width        ="wrap_content"
+				android:layout_height       ="wrap_content"
+				android:layout_gravity      ="bottom"
+				android:layout_marginLeft   ="@dimen/toolbar_image_title_margin_left"
+				android:layout_marginStart  ="@dimen/toolbar_image_title_margin_left"
+				android:layout_marginRight  ="@dimen/global_spacing_xs"
+				android:layout_marginEnd    ="@dimen/global_spacing_xs"
+				android:layout_marginBottom ="@dimen/global_spacing_xs"
+				android:paddingRight        ="@dimen/toolbar_image_title_padding_right"
+				android:paddingBottom       ="@dimen/global_spacing_xs"
+				android:textAppearance      ="@style/TextAppearance.CityGuide.Title.Inverse"
+				android:textSize            ="@dimen/global_text_size_headline"
+				android:maxLines            ="2"
+				android:ellipsize           ="end"
+				android:shadowColor         ="@android:color/black"
+				android:shadowRadius        ="16" />
 
 		</FrameLayout>
 	</LinearLayout>

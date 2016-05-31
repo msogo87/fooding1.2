@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/global_spacing_xxs"
+        android:paddingBottom="@dimen/global_spacing_xxs"
+        >
+
+        <ImageView
+            android:id                    ="@+id/fragment_favorites_list_poi_Image"
+            android:layout_width          ="@dimen/fragment_favorites_list_item_image_weigh"
+            android:layout_height         ="@dimen/fragment_favorites_list_item_image_hight"
+            android:layout_alignParentTop ="true"
+            android:adjustViewBounds      ="true"
+            android:scaleType             ="centerCrop"
+            android:paddingLeft           ="@dimen/global_spacing_xxs"
+            android:paddingStart          ="@dimen/global_spacing_xxs"
+            />
+            <!--android:layout_toEndOf="@id/fragment_favorites_list_poi_Image"-->
+        <TextView
+            android:id="@+id/fragment_favorites_list_poi_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fragment_favorites_list_poi_Image"
+            android:text="Poi Name"
+            android:textSize="@dimen/global_text_size_title"/>
+
+        <Switch
+            android:id="@+id/fragment_favorites_list_notification_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="notification enabled"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+</LinearLayout>

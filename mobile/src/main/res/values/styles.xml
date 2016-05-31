@@ -157,6 +157,14 @@
 		<item name="android:textColorLink">?android:attr/textColorLinkInverse</item>
 	</style>
 
+	<style name="ListViewTextAppearence" parent="@style/TextAppearance.CityGuide.Menu">
+		<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+		<item name="android:textColorHint">?android:attr/textColorHintInverse</item>
+		<item name="android:textColorHighlight">?android:attr/textColorHighlightInverse</item>
+		<item name="android:textColorLink">?android:attr/textColorLinkInverse</item>
+	</style>
+
+
 	<!-- Styles for tab view  -->
 	<style name="MyMaterialTheme" parent="MyMaterialTheme.Base">
 

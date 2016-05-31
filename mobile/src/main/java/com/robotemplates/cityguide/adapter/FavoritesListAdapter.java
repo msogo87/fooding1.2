@@ -1,12 +1,15 @@
 package com.robotemplates.cityguide.adapter;
 
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -16,36 +19,36 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.robotemplates.cityguide.CityGuideApplication;
 import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.communication.MainDbObjectData;
+import com.robotemplates.cityguide.database.data.FavoritesDbRow;
 import com.robotemplates.cityguide.listener.AnimateImageLoadingListener;
 import com.robotemplates.cityguide.utility.LocationUtility;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
-public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
 	private static final int VIEW_TYPE_POI = 1;
 	private static final int VIEW_TYPE_FOOTER = 2;
 
-	private List<MainDbObjectData> mPoiList;
-	private List<Object> mFooterList;
-	private PoiViewHolder.OnItemClickListener mListener;
-	private int mGridSpanCount;
-	private boolean mAnimationEnabled = true;
-	private int mAnimationPosition = -1;
-	private ImageLoader mImageLoader = ImageLoader.getInstance();
-	private DisplayImageOptions mDisplayImageOptions;
-	private ImageLoadingListener mImageLoadingListener;
+	private ArrayList<FavoritesDbRow>         mFavList;
+	private List<Object>                      mFooterList;
+	private FavViewHolder.OnItemClickListener mListener;
+//	private int                               mGridSpanCount;
+	private boolean                           mAnimationEnabled = true;
+	private int                               mAnimationPosition = -1;
+	private ImageLoader                       mImageLoader = ImageLoader.getInstance();
+	private DisplayImageOptions               mDisplayImageOptions;
+	private ImageLoadingListener              mImageLoadingListener;
 
 
 //	public PoiListAdapter(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
-	public PoiListAdapter(List<MainDbObjectData> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+	public FavoritesListAdapter(ArrayList<FavoritesDbRow> favList, FavViewHolder.OnItemClickListener listener)
 	{
-		mPoiList = poiList;
-		mFooterList = footerList;
+        mFavList  = favList;
 		mListener = listener;
-		mGridSpanCount = gridSpanCount;
-		setupImageLoader();
 	}
 
 
@@ -57,8 +60,8 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		// inflate view and create view holder
 		if(viewType== VIEW_TYPE_POI)
 		{
-			View view = inflater.inflate(R.layout.fragment_poi_list_item, parent, false);
-			return new PoiViewHolder(view, mListener, mImageLoader, mDisplayImageOptions, mImageLoadingListener);
+			View view = inflater.inflate(R.layout.fragment_favorites_list, parent, false);
+			return new FavViewHolder(view, mListener, mImageLoader, mDisplayImageOptions, mImageLoadingListener);
 		}
 		else if(viewType==VIEW_TYPE_FOOTER)
 		{
@@ -72,20 +75,21 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 
+
+
 	@Override
 	public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position)
 	{
 		// bind data
-		if(viewHolder instanceof PoiViewHolder)
+		if(viewHolder instanceof FavViewHolder)
 		{
 			// entity
-//			PoiModel poi = mPoiList.get(getPoiPosition(position));
-			MainDbObjectData poi = mPoiList.get(getPoiPosition(position));
+			FavoritesDbRow poi = mFavList.get(getPoiPosition(position));
 
 			// bind data
 			if(poi != null)
 			{
-				((PoiViewHolder) viewHolder).bindData(poi);
+				((FavViewHolder) viewHolder).bindData(poi);
 			}
 		}
 		else if(viewHolder instanceof FooterViewHolder)
@@ -112,7 +116,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	public int getItemCount()
 	{
 		int size = 0;
-		if(mPoiList !=null) size += mPoiList.size();
+		if(mFavList !=null) size += mFavList.size();
 		if(mFooterList!=null) size += mFooterList.size();
 		return size;
 	}
@@ -121,18 +125,20 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	@Override
 	public int getItemViewType(int position)
 	{
-		int pois = mPoiList.size();
-		int footers = mFooterList.size();
+		int pois = mFavList.size();
+		if ( mFooterList != null ) {
+            int footers = mFooterList.size();
+        }
 
 		if(position < pois) return VIEW_TYPE_POI;
-		else if(position < pois+footers) return VIEW_TYPE_FOOTER;
+//		else if(position < pois+footers) return VIEW_TYPE_FOOTER;
 		else return -1;
 	}
 
 
 	public int getPoiCount()
 	{
-		if(mPoiList !=null) return mPoiList.size();
+		if(mFavList !=null) return mFavList.size();
 		return 0;
 	}
 
@@ -169,15 +175,18 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
 //	public void refill(List<PoiModel> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
-	public void refill(List<MainDbObjectData> poiList, List<Object> footerList, PoiViewHolder.OnItemClickListener listener, int gridSpanCount)
+	public void refill(ArrayList<FavoritesDbRow> favList, FavViewHolder.OnItemClickListener listener)
 	{
-		mPoiList = poiList;
-		mFooterList = footerList;
+        mFavList = favList;
 		mListener = listener;
-		mGridSpanCount = gridSpanCount;
-		notifyDataSetChanged();
+//		notifyDataSetChanged();
 	}
 
+    public void refill(ArrayList<FavoritesDbRow> favList)
+    {
+        mFavList = favList;
+        notifyDataSetChanged();
+    }
 
 	public void stop()
 	{
@@ -225,7 +234,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	{
 		int marginTop = 0;
 
-		if(position<mGridSpanCount)
+		if(position<1)
 		{
 			TypedArray a = CityGuideApplication.getContext().obtainStyledAttributes(null, new int[]{android.R.attr.actionBarSize}, 0, 0);
 			marginTop = (int) a.getDimension(0, 0);
@@ -237,29 +246,22 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 
-	public static final class PoiViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+	public static final class FavViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
 	{
 		private TextView             mNameTextView;
-		private TextView             mDistanceTextView;
-		private TextView             mDescriptionView;
+		private Switch               mNotificationToggle;
 		private ImageView            mImageView;
 		private OnItemClickListener  mListener;
 		private ImageLoader          mImageLoader;
 		private DisplayImageOptions  mDisplayImageOptions;
 		private ImageLoadingListener mImageLoadingListener;
 
-		private TextView mIconServedInRestaurant;
-		private TextView mIconDelivery;
-		private TextView mIconDiscountType;
-
-
 		public interface OnItemClickListener
 		{
 			void onItemClick(View view, int position, long id, int viewType);
 		}
 
-
-		public PoiViewHolder(View itemView, OnItemClickListener listener, ImageLoader imageLoader, DisplayImageOptions displayImageOptions, ImageLoadingListener imageLoadingListener)
+		public FavViewHolder(View itemView, OnItemClickListener listener, ImageLoader imageLoader, DisplayImageOptions displayImageOptions, ImageLoadingListener imageLoadingListener)
 		{
 			super(itemView);
 			mListener = listener;
@@ -271,15 +273,16 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			itemView.setOnClickListener(this);
 
 			// find views
-			mNameTextView     = (TextView)  itemView.findViewById(R.id.fragment_poi_list_item_title);
-			mDistanceTextView = (TextView)  itemView.findViewById(R.id.fragment_poi_list_distance_from_item);
-			mImageView        = (ImageView) itemView.findViewById(R.id.fragment_poi_list_item_image);
-			mDescriptionView  = (TextView)  itemView.findViewById(R.id.fragment_poi_list_discount_details);
+			mNameTextView       = (TextView)  itemView.findViewById(R.id.fragment_favorites_list_poi_name);
+			mImageView          = (ImageView) itemView.findViewById(R.id.fragment_favorites_list_poi_Image);
+			mNotificationToggle = (Switch)itemView.findViewById(R.id.fragment_favorites_list_notification_toggle);
 
-			// find Icon Viewa
-			mIconServedInRestaurant = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_served_in_restaurant);
-			mIconDelivery = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_delivery);
-			mIconDiscountType = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_discount_type);
+
+
+			// find Icon View
+//			mIconServedInRestaurant = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_served_in_restaurant);
+//			mIconDelivery           = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_delivery);
+//			mIconDiscountType       = (TextView) itemView.findViewById(R.id.fragment_poi_list_icon_discount_type);
 		}
 
 
@@ -295,7 +298,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
 //		public void bindData(PoiModel poi)
-		public void bindData(MainDbObjectData poi)
+		public void bindData(FavoritesDbRow poi)
 		{
 			// Set Name
 			mNameTextView.setText(poi.getName());
@@ -303,19 +306,17 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			// Set Image
 			mImageLoader.displayImage(poi.getImage(), mImageView, mDisplayImageOptions, mImageLoadingListener);
 
-			// Set Location
-			String distance = LocationUtility.getDistanceString(poi.getDistance(), LocationUtility.isMetricSystem());
-			mDistanceTextView.setText(distance);
-			mDistanceTextView.setVisibility(View.VISIBLE);
-
-			// Set Description
-			mDescriptionView.setText(poi.getDescription());
-			mDescriptionView.setVisibility(View.VISIBLE);
-
-			// Set Icons
-			mIconServedInRestaurant.setVisibility(View.VISIBLE);
-			mIconDelivery.setVisibility(View.VISIBLE);
-			mIconDiscountType.setVisibility(View.VISIBLE);
+			// Set Notification toggle
+			if (poi.getToggle())
+			{
+				mNotificationToggle.setChecked(true);
+				mNotificationToggle.setText("Notification Enabled");
+			}
+			else
+			{
+				mNotificationToggle.setChecked(false);
+				mNotificationToggle.setText("Notification Disabled");
+			}
 		}
 	}
 

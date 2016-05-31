@@ -806,26 +806,26 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 		}
 	}
 
-	// merge objects from dIPoiList (dataImpoter) into poiList (SQLite database)
-	private void MergePoiList( List<PoiModel> poiList,List<MainDbObjectData> dIPoiList)
-	{
-		PoiModel tmp;
-		for ( int i=0 ; i < dIPoiList.size() ; i++ )
-		{
-			tmp = poiList.get(i);
-
-			tmp.setId(i);
-//			tmp.setImage("https://static.wixstatic.com/media/6b84ba_131bf9a52529e5e53b3a596afe637717.png/v1/fill/w_294,h_163,al_c,lg_1/6b84ba_131bf9a52529e5e53b3a596afe637717.png");
-			tmp.setImage(dIPoiList.get(i).picUrl);
-			//dIPoiList.get(i).discountType;
-			tmp.setLatitude(dIPoiList.get(i).location_lat);
-			tmp.setLongitude(dIPoiList.get(i).location_lng);
-			tmp.setName(dIPoiList.get(i).restName);
-			tmp.setDescription(dIPoiList.get(i).restType + " " + dIPoiList.get(i).discountDetails);
-
-			poiList.set(i,tmp);
-		}
-	}
+//	// merge objects from dIPoiList (dataImpoter) into poiList (SQLite database)
+//	private void MergePoiList( List<PoiModel> poiList,List<MainDbObjectData> dIPoiList)
+//	{
+//		PoiModel tmp;
+//		for ( int i=0 ; i < dIPoiList.size() ; i++ )
+//		{
+//			tmp = poiList.get(i);
+//
+//			tmp.setId(i);
+////			tmp.setImage("https://static.wixstatic.com/media/6b84ba_131bf9a52529e5e53b3a596afe637717.png/v1/fill/w_294,h_163,al_c,lg_1/6b84ba_131bf9a52529e5e53b3a596afe637717.png");
+//			tmp.setImage(dIPoiList.get(i).picUrl);
+//			//dIPoiList.get(i).discountType;
+//			tmp.setLatitude(dIPoiList.get(i).location_lat);
+//			tmp.setLongitude(dIPoiList.get(i).location_lng);
+//			tmp.setName(dIPoiList.get(i).restName);
+//			tmp.setDescription(dIPoiList.get(i).restType + " " + dIPoiList.get(i).discountDetails);
+//
+//			poiList.set(i,tmp);
+//		}
+//	}
 	
 	private void bindData()
 	{
@@ -1047,19 +1047,19 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 
 
 	private void setupRecyclerView()
-	{
+{
 //		GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1 /*getGridSpanCount()*/);
 //		gridLayoutManager.setOrientation(GridLayoutManager.VERTICAL);
 //		RecyclerView recyclerView = getRecyclerView();
 //		recyclerView.setLayoutManager(gridLayoutManager);
 
 
-		LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL , false);
-		linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-		RecyclerView recyclerView = getRecyclerView();
-		recyclerView.setLayoutManager(linearLayoutManager);
-		recyclerView.setHasFixedSize(true);
-	}
+	LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL , false);
+	linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+	RecyclerView recyclerView = getRecyclerView();
+	recyclerView.setLayoutManager(linearLayoutManager);
+	recyclerView.setHasFixedSize(true);
+}
 
 	// return the view position in the gridView
 	// returning '1' will position the view as 1st view from the left,

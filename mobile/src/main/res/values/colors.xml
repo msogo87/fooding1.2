@@ -87,6 +87,7 @@
 	<color name="drawer_badge_text_color">#eeffffff</color>
 
 	<color name="fragment_poi_list_recycler_item_panel_bg">#88000000</color>
+	<color name="fragment_poi_list_item_discount_details_color">#FFE09C4E</color>
 
 
 	<!-- Colors for tab view -->

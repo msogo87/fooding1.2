@@ -1,0 +1,46 @@
+<android.support.v7.widget.Toolbar  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/actionbarT"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_ractangular"
+    android:minHeight="?attr/actionBarSize"
+    app:theme="@style/Base.Theme.AppCompat.CompactMenu" >
+
+    <LinearLayout
+        android:id="@+id/toolbarmenucontainer"
+        android:layout_width="match_parent"
+        android:weightSum="3"
+        android:layout_height="match_parent"
+        android:orientation="horizontal" >
+
+        <!--<ImageButton-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:background="@drawable/preferedbackground"-->
+            <!--android:clickable="true"-->
+            <!--android:scaleType="fitXY"-->
+            <!--android:weight = "1"-->
+            <!--android:src="@drawable/preferredimage" />-->
+
+        <!--<ImageButton-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:background="@drawable/preferedbackground"-->
+            <!--android:clickable="true"-->
+            <!--android:scaleType="fitXY"-->
+            <!--android:weight = "1"-->
+            <!--android:src="@drawable/preferredimage" />-->
+
+        <!--<ImageButton-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:background="@drawable/preferedbackground"-->
+            <!--android:clickable="true"-->
+            <!--android:scaleType="fitXY"-->
+            <!--android:weight = "1"-->
+            <!--android:src="@drawable/preferredimage" />-->
+
+    </LinearLayout>
+
+</android.support.v7.widget.Toolbar>

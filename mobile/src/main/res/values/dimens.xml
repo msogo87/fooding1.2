@@ -4,6 +4,7 @@
 	<dimen name="global_keyline_m">32dp</dimen>
 	<dimen name="global_keyline_l">72dp</dimen>
 
+	<dimen name="global_spacing_xxxs">4dp</dimen>
 	<dimen name="global_spacing_xxs">8dp</dimen>
 	<dimen name="global_spacing_xs">16dp</dimen>
 	<dimen name="global_spacing_s">24dp</dimen>
@@ -54,10 +55,15 @@
 
 	<dimen name="placeholder_image_size">192dp</dimen>
 
-	<dimen name="fragment_poi_list_recycler_item_size">192dp</dimen>
+	<dimen name="fragment_poi_list_recycler_item_size">262dp</dimen>
+	<dimen name="fragment_poi_list_recycler_item_image_size">192dp</dimen>
 	<dimen name="fragment_poi_list_recycler_item_padding">4dp</dimen>
 	<dimen name="fragment_poi_list_recycler_item_panel_height">68dp</dimen>
 	<dimen name="fragment_poi_list_recycler_item_icon_padding">6dp</dimen>
+	<dimen name="fragment_poi_list_item_title_height">40dp</dimen>
+	<dimen name="fragment_poi_list_item_footer_height">40dp</dimen>
+	<dimen name="fragment_poi_detail_buttom_floating_menu_hight">50dp</dimen>
+
 
 	<dimen name="fragment_poi_detail_card_margin_horizontal">6dp</dimen>
 	<dimen name="fragment_poi_detail_card_margin_horizontal_first">12dp</dimen>
@@ -66,8 +72,13 @@
 	<dimen name="fragment_poi_detail_card_margin_vertical_first">10dp</dimen>
 	<dimen name="fragment_poi_detail_card_margin_vertical_last">16dp</dimen>
 	<dimen name="fragment_poi_detail_info_item_padding">12dp</dimen>
+	<dimen name="fragment_poi_detail_info_save_deal_button">30dp</dimen>
 
 	<dimen name="fragment_map_marker_size">42dp</dimen>
+
+	<dimen name="fragment_favorites_list_item_image_weigh">180dp</dimen>
+	<dimen name="fragment_favorites_list_item_image_hight">60dp</dimen>
+	<!--<dimen name="fragment_favorites_list_item_image_size">192dp</dimen>-->
 
 
 

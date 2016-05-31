@@ -1,48 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.robotemplates.cityguide.view.SelectorRelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/fragment_poi_list_item"
-	android:layout_width="match_parent"
-	android:layout_height="@dimen/fragment_poi_list_recycler_item_size"
-	android:minHeight="@dimen/fragment_poi_list_recycler_item_size"
-	android:listSelector="@drawable/selector_clickable_item_bg_inverse">
+	android:id            ="@+id/fragment_poi_list_item"
+	android:layout_width  ="match_parent"
+	android:layout_height ="@dimen/fragment_poi_list_recycler_item_size"
+	android:minHeight     ="@dimen/fragment_poi_list_recycler_item_size"
+	android:listSelector  ="@drawable/selector_clickable_item_bg_inverse">
 
-	<ImageView
-		android:id="@+id/fragment_poi_list_item_image"
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/fragment_poi_list_recycler_item_size"
-		android:adjustViewBounds="true"
-		android:scaleType="centerCrop" />
+	<!--Header ( name and location )-->
+    <TextView
+        android:id                     ="@+id/fragment_poi_list_item_title"
+        android:layout_width           ="wrap_content"
+        android:layout_height          ="@dimen/fragment_poi_list_item_title_height"
+        android:layout_alignParentLeft ="true"
+        android:paddingLeft            ="@dimen/global_spacing_xxs"
+        android:paddingStart           ="@dimen/global_spacing_xxs"
+        android:paddingTop             ="@dimen/global_spacing_xxs"
+        android:fontFamily             ="sans-serif"
+        android:ellipsize              ="end"
+        android:maxLines               ="1"
+        android:textSize               ="@dimen/global_text_size_headline"
+        android:textColor              ="@color/colorPrimary"
+        android:text                   ="EatUp"
+        ></TextView>
 
+    <TextView
+        android:id                      ="@+id/fragment_poi_list_distance_from_item"
+        android:layout_width            ="wrap_content"
+        android:layout_height           ="@dimen/fragment_poi_list_item_title_height"
+        android:layout_alignParentRight ="true"
+        android:paddingRight            ="@dimen/global_spacing_xxs"
+        android:paddingEnd              ="@dimen/global_spacing_xxs"
+        android:paddingTop              ="@dimen/global_spacing_xxs"
+        android:fontFamily              ="sans-serif"
+        android:text                    ="1.0km"
+        android:textSize                ="@dimen/global_text_size_headline"
+        android:textColor               ="@color/colorPrimary"
+        android:drawableLeft            ="@drawable/ic_card_address"
+        android:drawableStart           ="@drawable/ic_card_address"
+        android:drawablePadding         ="@dimen/fragment_poi_list_recycler_item_icon_padding"
+        ></TextView>
+	<!--End of Header-->
+
+
+    <ImageView
+		android:id               ="@+id/fragment_poi_list_item_image"
+		android:layout_width     ="match_parent"
+		android:layout_height    ="@dimen/fragment_poi_list_recycler_item_image_size"
+        android:layout_below     ="@id/fragment_poi_list_item_title"
+		android:adjustViewBounds ="true"
+		android:scaleType        ="centerCrop" />
+
+	<!--Sub-Image View-->
 	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/fragment_poi_list_recycler_item_panel_height"
-		android:layout_alignParentBottom="true"
-		android:gravity="center_vertical"
-		android:orientation="vertical"
-		android:paddingLeft="@dimen/global_spacing_xs"
-		android:paddingRight="@dimen/global_spacing_xxs"
-		android:background="@color/fragment_poi_list_recycler_item_panel_bg">
+		android:id                 ="@+id/fragment_poi_list_subimage_layout"
+		android:layout_width       ="match_parent"
+		android:layout_height      ="@dimen/fragment_poi_list_recycler_item_panel_height"
+		android:layout_alignBottom ="@+id/fragment_poi_list_item_image"
+		android:gravity            ="center_vertical"
+		android:orientation        ="horizontal"
+		android:weightSum          ="4"
+		android:paddingLeft        ="@dimen/global_spacing_xxs"
+		android:paddingRight       ="@dimen/global_spacing_xxs"
+        android:background         ="@drawable/shape_black_gradient">
 
-		<TextView
-			android:id="@+id/fragment_poi_list_item_name"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:textAppearance="@style/TextAppearance.CityGuide.Body1.Inverse"
-			android:fontFamily="sans-serif"
-			android:maxLines="2"
-			android:ellipsize="end" />
-
-		<TextView
-			android:id="@+id/fragment_poi_list_item_distance"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:drawableLeft="@drawable/ic_grid_distance"
-			android:drawablePadding="@dimen/fragment_poi_list_recycler_item_icon_padding"
-			android:textAppearance="@style/TextAppearance.CityGuide.Body1.Inverse"
-			android:fontFamily="sans-serif"
-			android:maxLines="1"
-			android:ellipsize="end" />
+        <TextView
+            android:id            ="@+id/fragment_poi_list_discount_details"
+            android:layout_width  ="match_parent"
+            android:layout_height ="wrap_content"
+            android:fontFamily    ="sans-serif"
+            android:textStyle     ="bold"
+            android:textAllCaps   ="true"
+            android:maxLines      ="2"
+            android:textColor     ="@color/fragment_poi_list_item_discount_details_color"
+            android:textSize      ="@dimen/global_text_size_title"
+            android:ellipsize     ="end"
+            android:text          ="Discount Description"/>
 
 	</LinearLayout>
+	<!--End of Sub-Image View-->
+
+	<!--Footer (shows time left and icons)-->
+	<TextView
+		android:id            ="@+id/fragment_poi_list_item_timer_text"
+		android:layout_width  ="wrap_content"
+		android:layout_height ="@dimen/fragment_poi_list_item_title_height"
+		android:layout_below  ="@id/fragment_poi_list_subimage_layout"
+		android:paddingLeft   ="@dimen/global_spacing_xxs"
+		android:paddingStart  ="@dimen/global_spacing_xxs"
+		android:paddingTop    ="@dimen/global_spacing_xxxs"
+		android:fontFamily    ="sans-serif"
+		android:ellipsize     ="end"
+		android:maxLines      ="1"
+		android:textSize      ="@dimen/global_text_size_subhead"
+		android:textColor     ="@color/fragment_poi_list_item_discount_details_color"
+		android:text          ="Time Left"
+		></TextView>
+
+
+	<TextView
+		android:id                 ="@+id/fragment_poi_list_item_timer"
+		android:layout_width       ="wrap_content"
+		android:layout_height      ="@dimen/fragment_poi_list_item_title_height"
+		android:layout_below       ="@id/fragment_poi_list_subimage_layout"
+		android:layout_alignBottom ="@id/fragment_poi_list_item_timer_text"
+		android:layout_toRightOf   ="@id/fragment_poi_list_item_timer_text"
+		android:layout_toEndOf     ="@id/fragment_poi_list_item_timer_text"
+		android:paddingLeft        ="@dimen/global_spacing_xxs"
+		android:paddingStart       ="@dimen/global_spacing_xxs"
+		android:paddingTop         ="@dimen/global_spacing_xxxs"
+		android:fontFamily         ="sans-serif"
+		android:ellipsize          ="end"
+		android:maxLines           ="1"
+		android:textSize           ="@dimen/global_text_size_subhead"
+		android:textColor          ="@color/fragment_poi_list_item_discount_details_color"
+		android:text               ="01:00:00"
+		></TextView>
+
+	<TextView
+		android:id                      ="@+id/fragment_poi_list_icon_delivery"
+		android:layout_width            ="wrap_content"
+		android:layout_height           ="wrap_content"
+		android:layout_gravity          ="end"
+		android:layout_alignBottom      ="@id/fragment_poi_list_item_timer_text"
+		android:layout_alignParentRight ="true"
+		android:layout_alignParentEnd   ="true"
+		android:drawableLeft            ="@drawable/ic_category_attractions"/>
+
+	<TextView
+		android:id                 ="@+id/fragment_poi_list_icon_served_in_restaurant"
+		android:layout_width       ="wrap_content"
+		android:layout_height      ="wrap_content"
+		android:layout_gravity     ="end"
+		android:layout_alignBottom ="@id/fragment_poi_list_item_timer_text"
+		android:layout_toLeftOf    ="@+id/fragment_poi_list_icon_delivery"
+		android:layout_toStartOf   ="@+id/fragment_poi_list_icon_delivery"
+		android:drawableLeft       ="@drawable/ic_category_nightlife"/>
+
+	<TextView
+		android:id                 ="@+id/fragment_poi_list_icon_discount_type"
+		android:layout_width       ="wrap_content"
+		android:layout_height      ="wrap_content"
+		android:layout_gravity     ="end"
+		android:layout_alignBottom ="@id/fragment_poi_list_item_timer_text"
+		android:layout_toLeftOf    ="@+id/fragment_poi_list_icon_served_in_restaurant"
+		android:layout_toStartOf   ="@+id/fragment_poi_list_icon_served_in_restaurant"
+		android:drawableLeft       ="@drawable/ic_category_atm"/>
+
+	<!--End of footer-->
 </com.robotemplates.cityguide.view.SelectorRelativeLayout>
