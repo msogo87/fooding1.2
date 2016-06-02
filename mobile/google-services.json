@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "685897232359",
+    "firebase_url": "https://eatappp.firebaseio.com",
+    "project_id": "eatappp",
+    "storage_bucket": "eatappp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685897232359:android:3e448a0a0f6ecf20",
+        "android_client_info": {
+          "package_name": "com.robotemplates.cityguide"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685897232359-5brbsabek40el5ooudju6jkhrotmq5ui.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8C9mFSjXl31i85O8W6UL20M8Y6WuJhL0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

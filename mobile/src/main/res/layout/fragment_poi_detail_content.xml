@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
 xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:orientation="vertical">
-
-
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragment_poi_detail_main_view"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
 
     <include layout="@layout/toolbar_image" />
 
@@ -65,13 +57,7 @@ android:orientation="vertical">
         android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical_last"
         android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
         android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
+
+
+
 </LinearLayout>
-
-
-<include layout="@layout/fragment_poi_detail_bottom_action_bar"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    >
-</include>
-</RelativeLayout>
