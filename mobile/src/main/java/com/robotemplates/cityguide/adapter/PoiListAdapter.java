@@ -304,7 +304,7 @@ public class PoiListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			mImageLoader.displayImage(poi.getImage(), mImageView, mDisplayImageOptions, mImageLoadingListener);
 
 			// Set Location
-			String distance = LocationUtility.getDistanceString(poi.getDistance(), LocationUtility.isMetricSystem());
+			String distance = LocationUtility.getDistanceString(poi.getDistance()*1000, LocationUtility.isMetricSystem());
 			mDistanceTextView.setText(distance);
 			mDistanceTextView.setVisibility(View.VISIBLE);
 

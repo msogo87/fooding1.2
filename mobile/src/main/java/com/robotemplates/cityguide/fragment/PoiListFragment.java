@@ -583,12 +583,12 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 				Log.e(TAG, "onDataImporterTaskCompleted: poiList length is: " + mDIPoiList.size() + dIpoiList.size() );
 
 				// calculate distances and sort
-				calculatePoiDistances();
-				sortPoiByDistance();
+				//calculatePoiDistances();
+				//sortPoiByDistance();
 				if(mAdapter!=null && mLocation!=null && mDIPoiList!=null && !mDIPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
 				Log.e(TAG, "DataImporeter callback end");
 				if (mDIPoiList != null && !mDIPoiList.isEmpty()) mStatefulLayout.showContent();
-//				else mStatefulLayout.showEmpty();
+				else mStatefulLayout.showEmpty();
 			}
 		});
 	}

@@ -16,32 +16,51 @@ public class MainDbObjectData implements ClusterItem {
 
     public String id;                        // ID - database uniqe number
 
-    @SerializedName("name")
+    @SerializedName("restName")
     public String restName;                  // Restaurant Name
 
-    @SerializedName("slogan")
+    @SerializedName("restSlogan")
+    public String restSlogan;                // Restaurant Type
+
+    @SerializedName("restType")
     public String restType;                  // Restaurant Type
-
-    @SerializedName("phone_number")
-    public String phoneNum;
-
-    @SerializedName("menu_url")
-    public String menuUrl;
-
-    @SerializedName("logo_url")
-    public String picUrl;                    // Link to picture
 
     @SerializedName("discount_type")
     public int    discountType;              // Discount Type
 
-    @SerializedName("discount_url")
-    public String discountUrl;            // Discount Type
-
-    @SerializedName("discount_text")
+    @SerializedName("discount_details")
     public String discountDetails;           // Discount Details
 
+    @SerializedName("location_lat")
     public double location_lat;              // Location Latitude
+
+    @SerializedName("location_long")
     public double location_lng;              // Location Longtitude
+
+    @SerializedName("start_time")
+    public String startTime;                 // deal's start time
+
+    @SerializedName("duration")
+    public String duration;                  // deal's duration
+
+    @SerializedName("phone_number")
+    public String phoneNum;
+
+    @SerializedName("main_image_url")
+    public String picUrl;                    // Link to picture
+
+    @SerializedName("menu_url")
+    public String menuUrl;
+
+    @SerializedName("restaurant_description")
+    public String poiDescription;
+
+
+//    @SerializedName("discount_url")
+//    public String discountUrl;               // Discount Type
+
+
+
     // TODO [MSOGO]: add Experation Time     // Time of discount experation
 
 
