@@ -24,6 +24,8 @@ import android.view.View;
 //import android.app.Fragment;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.robotemplates.cityguide.CityGuideApplication;
 import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.adapter.DrawerAdapter;
@@ -97,6 +99,10 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.Cat
 				mTabLayout.setupWithViewPager(mViewPager);
 			}
 		});
+
+		// Init Firebase
+		FirebaseMessaging.getInstance().subscribeToTopic("pushNotifications");
+		FirebaseInstanceId.getInstance().getToken();
 
 		// init analytics tracker
 		((CityGuideApplication) getApplication()).getTracker();

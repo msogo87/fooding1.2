@@ -15,7 +15,7 @@ import okhttp3.RequestBody;
  */
 public class FirebaseInstanceIDService extends FirebaseInstanceIdService{
 
-    private static final String SERVER_URL_FCM_REGISTER  = "http://10.0.3.2/fooding/fcm/register.php";
+    private static final String SERVER_URL_FCM_REGISTER  = "http://10.0.3.2/fooding/registerToken.php";
 
     @Override
     public void onTokenRefresh() {
@@ -29,7 +29,7 @@ public class FirebaseInstanceIDService extends FirebaseInstanceIdService{
 
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new FormBody.Builder()
-                .add("Token",token)
+                .add("token",token)
                 .build();
 
         Request request = new Request.Builder()
