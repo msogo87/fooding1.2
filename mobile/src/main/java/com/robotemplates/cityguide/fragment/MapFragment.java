@@ -205,8 +205,9 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 	}
 
 	@Override
-	public void onDataImporterTaskCompleted(final List<MainDbObjectData> dIpoiList)
+	public void onDataImporterTaskCompleted(final Object object)
 	{
+		final List<MainDbObjectData> dIpoiList = (List<MainDbObjectData>)object;
 		runTaskCallback(new Runnable() {
 			public void run() {
 				Log.e(TAG, "DataImporeter callback start...");

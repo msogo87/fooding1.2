@@ -2,8 +2,10 @@ package com.robotemplates.cityguide.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,6 +31,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.robotemplates.cityguide.CityGuideApplication;
 import com.robotemplates.cityguide.R;
 import com.robotemplates.cityguide.adapter.DrawerAdapter;
+import com.robotemplates.cityguide.common.QueryTypeEnum;
 import com.robotemplates.cityguide.communication.DataImporter;
 import com.robotemplates.cityguide.database.dao.CategoryDAO;
 import com.robotemplates.cityguide.database.model.CategoryModel;

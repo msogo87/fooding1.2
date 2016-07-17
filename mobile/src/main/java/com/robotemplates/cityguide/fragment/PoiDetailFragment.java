@@ -41,6 +41,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.melnykov.fab.FloatingActionButton;
@@ -79,11 +80,17 @@ import com.robotemplates.cityguide.view.ObservableStickyScrollView;
 import com.robotemplates.cityguide.view.StatefulLayout;
 import com.robotemplates.cityguide.common.QueryTypeEnum;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,10 +102,11 @@ import java.util.Map;
 
 public class PoiDetailFragment extends TaskFragment implements DataImporterListener, DatabaseCallListener, GeolocationListener
 {
-	private static final String    DIALOG_ABOUT    = "about";
-	private static final String    TAG             = "PoiDetailFragment";
-	private static final long      TIMER_DELAY     = 60000L; // in milliseconds
-	private static final int       MAP_ZOOM        = 14;
+	private static final String    DIALOG_ABOUT               = "about";
+	private static final String    TAG                        = "PoiDetailFragment";
+	private static final long      TIMER_DELAY                = 60000L; // in milliseconds
+	private static final int       MAP_ZOOM                   = 14;
+	private static final String    SERVER_URL_4_QUERY_USER_ID = "http://10.0.3.2/fooding/getUserId.php";
 
 	private View                       mRootView;
 	private StatefulLayout             mStatefulLayout;
@@ -117,6 +125,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	private Location                   mUserLocation         = null;
 	private Map<Long, FavoritesDbRow>  mFavoritesPoiMap      = new HashMap<>();
 	private boolean                    isAfterPause          = true;
+	private boolean                    mIsFavFirstVal        = false;
 	
 	@Override
 	public void onAttach(Context context)
@@ -179,7 +188,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 
 //		GetFavoritePoiList();
 
-		// get data from server using user's location and radius of visible area
+
 		DataImporter dataImporter = new DataImporter(mDataImporterListener);
 		dataImporter.execute(QueryTypeEnum.QUERY_POI, mPoiId);
 
@@ -209,8 +218,9 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 
 
 	@Override
-	public void onDataImporterTaskCompleted(final List<MainDbObjectData> dIpoiList)
+	public void onDataImporterTaskCompleted(final Object object)
 	{
+		final List<MainDbObjectData> dIpoiList = (List<MainDbObjectData>)object;
 		runTaskCallback(new Runnable()
 		{
 			public void run()
@@ -286,11 +296,72 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	public void onDestroy()
 	{
 		super.onDestroy();
+		if ( mIsFavFirstVal != mPoi.getFavorite())
+		{
+			int userId = GetUserId();
+			DataImporter dataImporter = new DataImporter(mDataImporterListener);
+			dataImporter.execute(QueryTypeEnum.QUERY_FAVORITE, (int)mPoi.getId(), mPoi.getFavorite(), userId, FirebaseInstanceId.getInstance().getToken());
+
+		}
 
 		// cancel async tasks
 		mDatabaseCallManager.cancelAllTasks();
 	}
-	
+
+
+	private int GetUserId()
+	{
+		int userId = 0;
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+		String userIdString = sharedPrefs.getString("USER_ID", null);
+		if ( userIdString != null)
+		{
+			return (Integer.parseInt(userIdString));
+		}
+		else
+		{
+			Log.e(TAG, "User Id was not found, performing query from server");
+			String tokenString = FirebaseInstanceId.getInstance().getToken();
+			try {
+				String inputString = URLEncoder.encode("token", "UTF-8") + "=" + URLEncoder.encode(tokenString, "UTF-8");
+				URL url = new URL(SERVER_URL_4_QUERY_USER_ID);
+				HttpURLConnection urlCon = (HttpURLConnection) url.openConnection();
+				urlCon.setDoOutput(true);
+				urlCon.setRequestMethod("POST");
+				urlCon.setFixedLengthStreamingMode(inputString.getBytes().length);
+				OutputStreamWriter o_stream = new OutputStreamWriter(urlCon.getOutputStream());
+				o_stream.write(inputString);
+				o_stream.flush();
+
+				try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
+
+					StringBuilder responseString = new StringBuilder();
+					String line = null;
+
+
+					while ((line = reader.readLine()) != null) {
+						if (line.startsWith("[")) {
+							responseString.append(line);
+						}
+					}
+					reader.close();
+
+				} catch (Exception ex) {
+					Log.e(TAG, "EXCEPTION!! failed reading user ID from server");
+				}
+			} catch (Exception ex) {
+				Log.e(TAG, "EXCEPTION!! token to string failed!!");
+			}
+
+			SharedPreferences.Editor editor = sharedPrefs.edit();
+			editor.putString("USER_ID", userIdString);
+			editor.commit();
+
+			return (userId);
+		}
+
+	}
 	
 	@Override
 	public void onDetach()
@@ -718,6 +789,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
         if ( favRow != null )
         {
             mPoi.setFavorite(favRow.getToggle());
+			mIsFavFirstVal = mPoi.getFavorite();
         }
         else
         {
@@ -728,15 +800,15 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 		ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) floatingActionButton.getLayoutParams();
 		params.topMargin = getResources().getDimensionPixelSize(R.dimen.toolbar_image_collapsed_height) - getResources().getDimensionPixelSize(R.dimen.fab_mini_size) / 2;
 		floatingActionButton.setLayoutParams(params);
-		floatingActionButton.setImageDrawable(mPoi.isFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
+		floatingActionButton.setImageDrawable(mPoi.getFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
 		floatingActionButton.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View v)
 			{
-					mPoi.setFavorite(!mPoi.isFavorite());
-					floatingActionButton.setImageDrawable(mPoi.isFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
-					UpdateFavoritesList(mPoi.getId(),true, mPoi.getName(), mPoi.getImage(), mPoi.isFavorite());
+					mPoi.setFavorite(!mPoi.getFavorite());
+					floatingActionButton.setImageDrawable(mPoi.getFavorite() ? ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_checked) : ContextCompat.getDrawable(getActivity(), R.drawable.ic_menu_favorite_unchecked));
+					UpdateFavoritesList(mPoi.getId(),true, mPoi.getName(), mPoi.getImage(), mPoi.getFavorite());
 			}
 		});
 	}

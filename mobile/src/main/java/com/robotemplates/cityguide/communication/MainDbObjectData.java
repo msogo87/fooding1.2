@@ -110,7 +110,7 @@ public class MainDbObjectData implements ClusterItem {
         return (restName.equals( ((MainDbObjectData)o).restName ));
     }
 
-    public boolean isFavorite()     { return isFavorite; }
+    public boolean getFavorite()     { return isFavorite; }
 
     public String getIntro()        { return restType; }
 

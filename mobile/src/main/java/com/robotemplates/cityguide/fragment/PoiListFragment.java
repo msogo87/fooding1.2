@@ -7,6 +7,7 @@ import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
@@ -15,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
@@ -46,6 +48,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.melnykov.fab.FloatingActionButton;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.robotemplates.cityguide.CityGuideApplication;
@@ -121,6 +124,8 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	private List<Object>           mFooterList = new ArrayList<>();
 	private List<MainDbObjectData> mDIPoiList = new ArrayList();
 	private DataImporterListener   mDataImporterListener = this;
+	private String                 mUserIdString = null;
+	private boolean                mIsUserIdData = false;
 
 	public static PoiListFragment newInstance(long categoryId)
 	{
@@ -312,7 +317,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	public void onSaveInstanceState(Bundle outState)
 	{
 		// save current instance state
-		Log.e(TAG,"Seving state");
+		Log.e(TAG,"Saving state");
 		super.onSaveInstanceState(outState);
 //		setUserVisibleHint(true);
 
@@ -560,35 +565,74 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 	}
 
 	@Override
-	public void onDataImporterTaskCompleted(final List<MainDbObjectData> dIpoiList)
+	public void onDataImporterTaskCompleted(final Object object)
 	{
 		runTaskCallback(new Runnable()
 		{
 			public void run()
 			{
+				List<MainDbObjectData> dIpoiList=null;
 				Log.e(TAG, "DataImporeter callback start...");
+				try
+				{
+					 dIpoiList = (List<MainDbObjectData>)object;
+				}
+				catch ( ClassCastException ex)
+				{
+					mUserIdString = (String)object;
+					mIsUserIdData = true;
+				}
 
-				mDIPoiList = dIpoiList;
+				if ( mIsUserIdData ) // QUERY_USER_ID
+				{
+					mUserIdString = (String)object;
 
-				// load data
-//				if(mPoiList==null || mPoiList.isEmpty()) loadData();
+					Log.e(TAG, "mUserIdString " + mUserIdString);
+
+					// Store user ID in shared preference for later usage
+					SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+					SharedPreferences.Editor editor = sharedPrefs.edit();
+					editor.putString("USER_ID", mUserIdString);
+					editor.commit();
+				}
+				else
+				{
+
+					mDIPoiList = dIpoiList;
 
 
-				// lazy loading progress
-				if(mLazyLoading) showLazyLoadingProgress(true);
+					// load data
+					//				if(mPoiList==null || mPoiList.isEmpty()) loadData();
 
-				// show toolbar if hidden
-				showToolbar(true);
 
-				Log.e(TAG, "onDataImporterTaskCompleted: poiList length is: " + mDIPoiList.size() + dIpoiList.size() );
+					// lazy loading progress
+					if (mLazyLoading) showLazyLoadingProgress(true);
 
-				// calculate distances and sort
-				//calculatePoiDistances();
-				//sortPoiByDistance();
-				if(mAdapter!=null && mLocation!=null && mDIPoiList!=null && !mDIPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
-				Log.e(TAG, "DataImporeter callback end");
-				if (mDIPoiList != null && !mDIPoiList.isEmpty()) mStatefulLayout.showContent();
-				else mStatefulLayout.showEmpty();
+					// show toolbar if hidden
+					showToolbar(true);
+
+					Log.e(TAG, "onDataImporterTaskCompleted: poiList length is: " + mDIPoiList.size() + dIpoiList.size());
+
+					// calculate distances and sort
+					//calculatePoiDistances();
+					//sortPoiByDistance();
+					if (mAdapter != null && mLocation != null && mDIPoiList != null && !mDIPoiList.isEmpty()) mAdapter.notifyDataSetChanged();
+					Log.e(TAG, "DataImporeter callback end");
+					if (mDIPoiList != null && !mDIPoiList.isEmpty()) mStatefulLayout.showContent();
+					else mStatefulLayout.showEmpty();
+
+					if (mUserIdString == null)
+					{
+						SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+						mUserIdString = sharedPrefs.getString("USER_ID", null);
+						if (mUserIdString == null)
+						{
+							// Get user ID from server by sending user's firebase token
+							DataImporter dataImporter = new DataImporter(mDataImporterListener);
+							dataImporter.execute(QueryTypeEnum.QUERY_USER_ID, FirebaseInstanceId.getInstance().getToken());
+						}
+					}
+				}
 			}
 		});
 	}
