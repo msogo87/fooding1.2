@@ -1205,6 +1205,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 
 	private void startPoiDetailActivity(View view, long poiId)
 	{
+		Log.e(TAG, "starting new POI details activity");
 		Intent intent = PoiDetailActivity.newIntent(getActivity(), poiId);
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
 		{

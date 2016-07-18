@@ -53,6 +53,7 @@ public class FavoritesFragment extends Fragment implements FavoritesListAdapter.
     private FavoritesListAdapter       mAdapter;
     private Map<Long, FavoritesDbRow>  mFavoritesPoiMap      = new HashMap<>();
     private boolean                    isAfterPause          = true;
+    private boolean                    mIsFirstTimeViwed     = true;
     ArrayList<FavoritesDbRow>          mFavoritePoiList;
 
 
@@ -66,8 +67,12 @@ public class FavoritesFragment extends Fragment implements FavoritesListAdapter.
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
-        setRetainInstance(true);
+///////////////////////////////////////////////
+//        // moved to setUserVisibleHint     //
+//        setHasOptionsMenu(true);           //
+//        setRetainInstance(true);           //
+///////////////////////////////////////////////
+
 
 //        // handle fragment arguments
 //        Bundle arguments = getArguments();
@@ -80,9 +85,14 @@ public class FavoritesFragment extends Fragment implements FavoritesListAdapter.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+
+/////////////////////////////////////////////
+        // moved to setUserVisibleHint     //
         mRootView = inflater.inflate(R.layout.fragment_favorites, container, false);
         setupRecyclerView();
         return mRootView;
+/////////////////////////////////////////////
+
     }
 
 
@@ -94,6 +104,25 @@ public class FavoritesFragment extends Fragment implements FavoritesListAdapter.
         // setup stateful layout
         setupStatefulLayout(savedInstanceState);
 
+    }
+
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if (isVisibleToUser)
+        {
+            if (mIsFirstTimeViwed) {
+                mIsFirstTimeViwed = false;
+
+                setHasOptionsMenu(true);
+                setRetainInstance(true);
+
+            }
+        }
+        else
+        {
+
+        }
     }
 
     @Override

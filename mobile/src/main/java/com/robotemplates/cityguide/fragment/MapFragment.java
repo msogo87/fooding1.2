@@ -99,6 +99,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 	private boolean mIsNewCluster = false;
 	private CameraPosition mLastCameraPosition = null;
 	private boolean mIsFirstTimeViwed = true;
+	private boolean mIsFragmentPaused = false;
 
 	@Override
 	public void onAttach(Context context)
@@ -162,7 +163,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 		if (isVisibleToUser)
 		{
-			if (mIsFirstTimeViwed) {
+			if (mIsFirstTimeViwed && !mIsFragmentPaused) {
 				mIsFirstTimeViwed = false;
 				// setup map
 				setupMap();
@@ -265,6 +266,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 		// map
 		if(mMapView!=null) mMapView.onResume();
+		mIsFragmentPaused = false;
 	}
 	
 	
@@ -275,6 +277,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 
 		// map
 		if(mMapView!=null) mMapView.onPause();
+		mIsFragmentPaused = true;
 	}
 	
 	
@@ -282,6 +285,7 @@ public class MapFragment extends TaskFragment implements DatabaseCallListener, D
 	public void onStop()
 	{
 		super.onStop();
+		mIsFragmentPaused = true;
 	}
 	
 	

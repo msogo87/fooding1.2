@@ -1219,25 +1219,9 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 		int markerColor = typedValue.data;
 		String markerColorHex = String.format("0x%06x", (0xffffff & markerColor));
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("https://maps.googleapis.com/maps/api/staticmap");
-		builder.append("?key=");
-		builder.append(key);
-		builder.append("&size=320x320");
-		builder.append("&scale=2");
-		builder.append("&maptype=roadmap");
-		builder.append("&zoom=");
-		builder.append(zoom);
-		builder.append("&center=");
-		builder.append(lat);
-		builder.append(",");
-		builder.append(lon);
-		builder.append("&markers=color:");
-		builder.append(markerColorHex);
-		builder.append("%7C");
-		builder.append(lat);
-		builder.append(",");
-		builder.append(lon);
+		String builder = new String();
+		builder = "https://maps.googleapis.com/maps/api/staticmap" + "?key=" + key + "&size=320x320" + "&scale=2" + "&maptype=roadmap" + "&zoom=" +
+		zoom + "&center=" + lat + "," + lon + "&markers=color:" + markerColorHex + "%7C" + lat + "," + lon ;
 		return builder.toString();
 	}
 
@@ -1293,9 +1277,8 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	{
 		try
 		{
-			StringBuilder builder = new StringBuilder();
-			builder.append("tel:");
-			builder.append(phoneNumber);
+			String builder = new String();
+			builder = "tel:" + phoneNumber;
 
 			Intent intent = new Intent(android.content.Intent.ACTION_DIAL, Uri.parse(builder.toString()));
 			startActivity(intent);
@@ -1311,9 +1294,8 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 	{
 		try
 		{
-			StringBuilder builder = new StringBuilder();
-			builder.append("mailto:");
-			builder.append(email);
+			String builder = new String();
+			builder = "mailto:" + email;
 
 			Intent intent = new Intent(android.content.Intent.ACTION_SENDTO, Uri.parse(builder.toString()));
 			startActivity(intent);
