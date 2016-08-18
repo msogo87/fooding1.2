@@ -41,7 +41,8 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:adjustViewBounds="true"
-				android:scaleType="fitCenter" />
+				android:scaleType="fitCenter"
+				android:contentDescription="image of restaurant's location on the map"/>
 
 		</com.robotemplates.cityguide.view.SelectorLinearLayout>
 

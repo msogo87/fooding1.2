@@ -6,7 +6,7 @@
 	android:layout_height="@dimen/drawer_banner_height"
 	android:minHeight="@dimen/drawer_banner_height"
 	android:padding="@dimen/global_keyline_s"
-	android:gravity="left|bottom"
+	android:gravity="start|bottom"
 	android:orientation="horizontal"
 	android:background="@drawable/banner">
 

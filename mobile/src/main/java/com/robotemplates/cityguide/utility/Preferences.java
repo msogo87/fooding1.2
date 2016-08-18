@@ -28,7 +28,7 @@ public class Preferences
 	{
 		Editor editor = mSharedPreferences.edit();
 		editor.clear();
-		editor.commit();
+		editor.apply();
 	}
 
 
@@ -50,6 +50,6 @@ public class Preferences
 		String key = mContext.getString(R.string.prefs_key_map_type);
 		Editor editor = mSharedPreferences.edit();
 		editor.putInt(key, mapType);
-		editor.commit();
+		editor.apply();
 	}
 }

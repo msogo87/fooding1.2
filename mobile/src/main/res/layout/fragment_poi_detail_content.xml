@@ -9,54 +9,64 @@ android:orientation="vertical">
 
     <View
         android:id="@+id/fragment_poi_detail_line"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_shadow_height"
-        android:background="@drawable/shape_shadow"/>
+        android:layout_width  ="match_parent"
+        android:layout_height ="@dimen/toolbar_shadow_height"
+        android:background    ="@drawable/shape_shadow"/>
 
     <include
         layout="@layout/fragment_poi_detail_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fragment_poi_detail_card_margin_vertical_first"
-        android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
-        android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last"/>
+        android:layout_width        ="match_parent"
+        android:layout_height       ="wrap_content"
+        android:layout_marginTop    ="@dimen/fragment_poi_detail_card_margin_vertical_first"
+        android:layout_marginBottom ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginStart  ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginLeft   ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginEnd    ="@dimen/fragment_poi_detail_card_margin_horizontal_last"
+        android:layout_marginRight  ="@dimen/fragment_poi_detail_card_margin_horizontal_last"/>
 
     <include
         layout="@layout/fragment_poi_detail_content_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fragment_poi_detail_card_margin_vertical_first"
-        android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
-        android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last"/>
+        android:layout_width        ="match_parent"
+        android:layout_height       ="wrap_content"
+        android:layout_marginTop    ="@dimen/fragment_poi_detail_card_margin_vertical_first"
+        android:layout_marginBottom ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginStart  ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginLeft   ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginEnd    ="@dimen/fragment_poi_detail_card_margin_horizontal_last"
+        android:layout_marginRight  ="@dimen/fragment_poi_detail_card_margin_horizontal_last"/>
 
     <include
         layout="@layout/fragment_poi_detail_content_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
-        android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
+        android:layout_width        ="match_parent"
+        android:layout_height       ="wrap_content"
+        android:layout_marginTop    ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginBottom ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginStart  ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginLeft   ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginEnd    ="@dimen/fragment_poi_detail_card_margin_horizontal_last"
+        android:layout_marginRight  ="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
 
     <include
         layout="@layout/fragment_poi_detail_content_map"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
-        android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
+        android:layout_width        ="match_parent"
+        android:layout_height       ="wrap_content"
+        android:layout_marginTop    ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginBottom ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginStart  ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginLeft   ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginEnd    ="@dimen/fragment_poi_detail_card_margin_horizontal_last"
+        android:layout_marginRight  ="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
 
     <include
         layout="@layout/fragment_poi_detail_content_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fragment_poi_detail_card_margin_vertical"
-        android:layout_marginBottom="@dimen/fragment_poi_detail_card_margin_vertical_last"
-        android:layout_marginLeft="@dimen/fragment_poi_detail_card_margin_horizontal_first"
-        android:layout_marginRight="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
+        android:layout_width        ="match_parent"
+        android:layout_height       ="wrap_content"
+        android:layout_marginTop    ="@dimen/fragment_poi_detail_card_margin_vertical"
+        android:layout_marginBottom ="@dimen/fragment_poi_detail_card_margin_vertical_last"
+        android:layout_marginStart  ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginLeft   ="@dimen/fragment_poi_detail_card_margin_horizontal_first"
+        android:layout_marginEnd    ="@dimen/fragment_poi_detail_card_margin_horizontal_last"
+        android:layout_marginRight  ="@dimen/fragment_poi_detail_card_margin_horizontal_last" />
 
 
 

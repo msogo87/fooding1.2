@@ -349,7 +349,7 @@ public class FavoritesFragment extends Fragment implements FavoritesListAdapter.
         String json = gson.toJson(mFavoritesPoiMap);
 
         editor.putString("FAV", json);
-        editor.commit();
+        editor.apply();
     }
 
     private void UpdateFavoritesList(long id, boolean isShowNotification, String poiName, String picUrl)

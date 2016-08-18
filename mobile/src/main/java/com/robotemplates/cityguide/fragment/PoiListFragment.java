@@ -593,7 +593,7 @@ public class PoiListFragment extends TaskFragment implements DataImporterListene
 					SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 					SharedPreferences.Editor editor = sharedPrefs.edit();
 					editor.putString("USER_ID", mUserIdString);
-					editor.commit();
+					editor.apply();
 				}
 				else
 				{

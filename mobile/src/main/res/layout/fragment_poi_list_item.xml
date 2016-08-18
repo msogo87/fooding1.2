@@ -15,6 +15,8 @@
         android:layout_alignParentLeft ="true"
         android:paddingLeft            ="@dimen/global_spacing_xxs"
         android:paddingStart           ="@dimen/global_spacing_xxs"
+		android:paddingRight           ="@dimen/global_spacing_xxs"
+		android:paddingEnd             ="@dimen/global_spacing_xxs"
         android:paddingTop             ="@dimen/global_spacing_xxs"
         android:fontFamily             ="sans-serif"
         android:ellipsize              ="end"
@@ -29,7 +31,9 @@
         android:layout_width            ="wrap_content"
         android:layout_height           ="@dimen/fragment_poi_list_item_title_height"
         android:layout_alignParentRight ="true"
-        android:paddingRight            ="@dimen/global_spacing_xxs"
+		android:paddingLeft             ="@dimen/global_spacing_xxs"
+		android:paddingStart            ="@dimen/global_spacing_xxs"
+		android:paddingRight            ="@dimen/global_spacing_xxs"
         android:paddingEnd              ="@dimen/global_spacing_xxs"
         android:paddingTop              ="@dimen/global_spacing_xxs"
         android:fontFamily              ="sans-serif"
@@ -44,12 +48,13 @@
 
 
     <ImageView
-		android:id               ="@+id/fragment_poi_list_item_image"
-		android:layout_width     ="match_parent"
-		android:layout_height    ="@dimen/fragment_poi_list_recycler_item_image_size"
-        android:layout_below     ="@id/fragment_poi_list_item_title"
-		android:adjustViewBounds ="true"
-		android:scaleType        ="centerCrop" />
+		android:id                 ="@+id/fragment_poi_list_item_image"
+		android:layout_width       ="match_parent"
+		android:layout_height      ="@dimen/fragment_poi_list_recycler_item_image_size"
+        android:layout_below       ="@id/fragment_poi_list_item_title"
+		android:adjustViewBounds   ="true"
+		android:scaleType          ="centerCrop"
+		android:contentDescription ="restaurant's main image"/>
 
 	<!--Sub-Image View-->
 	<LinearLayout
@@ -88,6 +93,8 @@
 		android:layout_below  ="@id/fragment_poi_list_subimage_layout"
 		android:paddingLeft   ="@dimen/global_spacing_xxs"
 		android:paddingStart  ="@dimen/global_spacing_xxs"
+		android:paddingRight  ="@dimen/global_spacing_xxs"
+		android:paddingEnd    ="@dimen/global_spacing_xxs"
 		android:paddingTop    ="@dimen/global_spacing_xxxs"
 		android:fontFamily    ="sans-serif"
 		android:ellipsize     ="end"
@@ -108,7 +115,9 @@
 		android:layout_toEndOf     ="@id/fragment_poi_list_item_timer_text"
 		android:paddingLeft        ="@dimen/global_spacing_xxs"
 		android:paddingStart       ="@dimen/global_spacing_xxs"
-		android:paddingTop         ="@dimen/global_spacing_xxxs"
+        android:paddingRight       ="@dimen/global_spacing_xxs"
+        android:paddingEnd         ="@dimen/global_spacing_xxs"
+        android:paddingTop         ="@dimen/global_spacing_xxxs"
 		android:fontFamily         ="sans-serif"
 		android:ellipsize          ="end"
 		android:maxLines           ="1"

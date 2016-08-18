@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/colorPrimary"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/img_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/common_plus_signin_btn_icon_light_pressed"
+        tools:visibility="gone"/>
+
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/button_facebook_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        tools:visibility="gone"/>
+        <!--android:layout_marginBottom="@dimen/activity_vertical_margin" />-->
+        <!--android:layout_marginTop="@dimen/activity_vertical_margin"-->
+
+    <com.google.android.gms.common.SignInButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_vertical_margin_small"
+        android:text="Sign-in with Google"
+        android:textAllCaps="false"
+        android:id="@+id/button_goolge"
+        android:layout_gravity="center_horizontal"
+        tools:visibility="gone"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:text="Skip"
+        android:textAllCaps="false"
+        android:id="@+id/button_skip"
+        android:layout_gravity="center_horizontal"
+        tools:visibility="gone"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:layout_marginTop="@dimen/very_big_margin"
+        android:text=""
+        android:textAllCaps="false"
+        android:id="@+id/status_text_view"
+        android:layout_gravity="center_horizontal"
+        tools:visibility="gone"/>
+
+</LinearLayout>

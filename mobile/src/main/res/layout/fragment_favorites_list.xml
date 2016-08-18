@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -19,6 +19,9 @@
             android:scaleType             ="centerCrop"
             android:paddingLeft           ="@dimen/global_spacing_xxs"
             android:paddingStart          ="@dimen/global_spacing_xxs"
+            android:paddingRight          ="@dimen/global_spacing_xxs"
+            android:paddingEnd            ="@dimen/global_spacing_xxs"
+            android:contentDescription    ="restaurant's main image"
             />
             <!--android:layout_toEndOf="@id/fragment_favorites_list_poi_Image"-->
         <TextView
@@ -39,4 +42,4 @@
             android:layout_alignParentEnd="true" />
 
     </RelativeLayout>
-</LinearLayout>
+<!--</LinearLayout>-->

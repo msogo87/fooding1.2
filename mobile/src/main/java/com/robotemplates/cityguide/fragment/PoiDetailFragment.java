@@ -356,7 +356,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 
 			SharedPreferences.Editor editor = sharedPrefs.edit();
 			editor.putString("USER_ID", userIdString);
-			editor.commit();
+			editor.apply();
 
 			return (userId);
 		}
@@ -1362,7 +1362,7 @@ public class PoiDetailFragment extends TaskFragment implements DataImporterListe
 
 		editor.putString("FAV", json);
 //        editor.remove("FAV");
-		editor.commit();
+		editor.apply();
 
 
 //        try {

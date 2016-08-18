@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "685897232359-ipvqt0q2ll2cov6grpm1un0gsi0472rr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.robotemplates.cityguide",
+            "certificate_hash": "3522223A52D5BEE7A6BD59A6FE79328EE40CBCA1"
+          }
+        },
+        {
           "client_id": "685897232359-5brbsabek40el5ooudju6jkhrotmq5ui.apps.googleusercontent.com",
           "client_type": 3
         }
