@@ -5,7 +5,9 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewCompat;
@@ -19,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -36,6 +40,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -44,6 +50,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.robotemplates.cityguide.R;
+import com.robotemplates.cityguide.common.SignInMethodEnum;
+import com.robotemplates.cityguide.communication.DataImporter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,14 +64,15 @@ import java.util.Arrays;
  */
 public class SignInActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener
 {
-    private final static String TAG = "SignInActivity";
-    private final static long STARTUP_DELAY      = 0;
-    private final static long STARTUP_ITEM_DELAY = 1000;
-    private final static long ANIM_LOGO_DURATION = 2000;
-    private final static long ANIM_ITEM_DURATION = 1000;
+    private final static String TAG                       = "SignInActivity";
+    private final static long STARTUP_DELAY               = 0;
+    private final static long STARTUP_ITEM_DELAY          = 1000;
+    private final static long ANIM_LOGO_DURATION          = 2000;
+    private final static long ANIM_ITEM_DURATION          = 1000;
 
-    private final static int RC_GP_SIGN_IN       = 100; // google play sign-in request code
-    private static int RC_FB_SIGN_IN;                   // facebook sign-in request code
+    private final static int TOTAL_NUM_OF_SIGN_IN_METHODS = 2;
+    private final static int RC_GP_SIGN_IN                = 100; // google play sign-in request code
+    private static int RC_FB_SIGN_IN;                            // facebook sign-in request code
 
     /* facebook's request codes:
     public enum RequestCodeOffset {
@@ -92,36 +101,111 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
 
     private CallbackManager                mFacebookCallbackManager;
     private GoogleApiClient                mGoogleApiClient;
-    private GoogleSignInOptions            mSignInOpt;
     private FirebaseAuth                   mAuthentication;
     private FirebaseAuth.AuthStateListener mAuthenticationListener;
-
-    // Configure sign-in to request the user's ID, email address, and basic profile. ID and
-    // basic profile are included in DEFAULT_SIGN_IN.
-
+    private AccessTokenTracker             mAccessTokenTracker;
+    private int                            mNumOfSignInMethodsTried = 0; // number of signed in methods that were we tried to sign in with
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        boolean isSignedIn = IsSignedInSharedPref();
+        if (isSignedIn) { // if sign-in is registered in shared preferences, skip sign-in - start main activity
+            Log.d(TAG, "user sign-in is not registered in shared preferences");
+            StartMainActivity();
+        }
+        else {
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-        //   configure Facebook and Google Sign-in  //
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        AppEventsLogger.activateApp(getApplication()); //activate Facebook Analitics
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //   configure Facebook and Google Sign-in  //
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            FacebookSdk.sdkInitialize(getApplicationContext());
+            AppEventsLogger.activateApp(getApplication()); //activate Facebook Analitics
 
-        mSignInOpt = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
+            GoogleSignInOptions signInOpt = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
 
-        // Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, mSignInOpt)
-                .build();
+            // Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, signInOpt)
+                    .build();
 
+            mAuthentication = FirebaseAuth.getInstance();
+
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //   Button listeners and callback listeners  //
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+            // firebase authentication listener for google sign-in
+            mAuthenticationListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                    if (user != null) {
+                        // User is signed in
+                        Log.d(TAG, "signed in with google. user id: " + user.getUid() + ", starting main activity");
+
+                        SetSignInInfo(user.getToken(false).toString(), "Google", true); // false = do not force refresh token
+                        StartMainActivity();
+                    } else {
+                        // User is signed out
+                        Log.d(TAG, "user is not signed in with Google, trying silent sign-in");
+
+                        // try silent sign-in
+                        OptionalPendingResult<GoogleSignInResult> pendingResult =
+                                Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+
+                        // TODO: enable after finished debug
+                        if (pendingResult.isDone()) {
+                            // There's immediate result available and silent sign-in is successful
+                            Log.d(TAG, "silent sign-in is successful. signed-in with Google. starting main activity");
+                            if (pendingResult.get().isSuccess()) {
+                                SetSignInInfo(pendingResult.get().getSignInAccount().getIdToken(), "Google", true);
+                                StartMainActivity();
+                            }
+                        } else {
+                            mNumOfSignInMethodsTried++;
+                            if (mNumOfSignInMethodsTried == TOTAL_NUM_OF_SIGN_IN_METHODS) {
+                                LoadSignInView();
+                            }
+                        }
+                    }
+                }
+            };
+
+            //facebook sign-in authentication
+            CheckFacebookLoggedIn();
+        }
+    } // End of OnCreate()
+
+    public void CheckFacebookLoggedIn()
+    {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if( accessToken != null && accessToken.getToken() != null )
+        {
+            Log.d(TAG, "Facebook authentication: signed-in succeded. token: " + accessToken.getToken());
+            SetSignInInfo(accessToken.getToken(),"Facebook",true);
+            StartMainActivity();
+        }
+        else
+        {
+            Log.d(TAG, "Facebook authentication: signed-in failed. token is null");
+            mNumOfSignInMethodsTried++;
+            if (mNumOfSignInMethodsTried == TOTAL_NUM_OF_SIGN_IN_METHODS)
+            {
+                LoadSignInView();
+            }
+        }
+    }
+
+    // load sign-in view - enable to sign in.
+    private void LoadSignInView()
+    {
         setContentView(R.layout.activity_sign_in);
 
         mLogoImgView     = (ImageView)   findViewById(R.id.img_logo);
@@ -130,10 +214,9 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
         mSkipTxtView     = (TextView)    findViewById(R.id.button_skip);
         mStatusTxtView   = (TextView)    findViewById(R.id.status_text_view);
         mFacebookCallbackManager = CallbackManager.Factory.create();
-        mAuthentication            = FirebaseAuth.getInstance();
 
         mFacebookBtnView.setReadPermissions(Arrays.asList(
-            "public_profile", "email", "user_birthday", "user_friends"));
+                "public_profile", "email", "user_birthday", "user_friends"));
 
         RC_FB_SIGN_IN = mFacebookBtnView.getRequestCode();
 
@@ -160,30 +243,11 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
         Log.e(TAG,"Animation end");
 
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-        //   Button listeners and callback listeners  //
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-        // firebase athentication listener for google sign-in
-        mAuthenticationListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                }
-            }
-        };
-
         // Google sign-in botton listener - starts Google sign-in activity
         mGoogleBtnView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
+            public void onClick(View v)
+            {
                 Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
                 startActivityForResult(signInIntent, RC_GP_SIGN_IN);
             }
@@ -192,8 +256,8 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
         // Skip sign-in - starts the main activity and closes this (sign-in) activity
         mSkipTxtView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
+            public void onClick(View v)
+            {
                 Intent intent = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(intent);
                 finish();
@@ -208,27 +272,27 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
             public void onSuccess(LoginResult loginResult)
             {
                 GraphRequest request = GraphRequest.newMeRequest(
-                    loginResult.getAccessToken(),
-                    new GraphRequest.GraphJSONObjectCallback()
-                    {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response)
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback()
                         {
-                            Log.e(TAG, "Successfully signed in with facebook!   " + response.toString());
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response)
+                            {
+                                Log.e(TAG, "Successfully signed in with facebook!" + response.toString());
 
-                            try
-                            {
-                                // Application code
-                                String email    = object.getString("email");
-                                String birthday = object.getString("birthday"); // 01/31/1980 format
+                                try
+                                {
+                                    // Application code
+                                    String email    = object.getString("email");
+                                    String birthday = object.getString("birthday"); // 01/31/1980 format
+                                }
+                                catch(JSONException e)
+                                {
+                                    Log.e(TAG, response.toString());
+                                    e.printStackTrace();
+                                }
                             }
-                            catch(JSONException e)
-                            {
-                                Log.e(TAG, response.toString());
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                        });
                 Bundle parameters = new Bundle();
                 parameters.putString("fields", "id,name,email,gender,birthday");
                 request.setParameters(parameters);
@@ -256,7 +320,7 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
                 mStatusTxtView.setText("Error! Could not sign-in with Facebook! Please pick a sign-in method and try again or press skip button to continue");
             }
         });
-    } // End of OnCreate()
+    }
 
     @Override
     // onActivityResult is using requestCode to determine callback type, and calls a callbackManager accordingly
@@ -282,7 +346,8 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onStart() {
+    public void onStart()
+    {
         super.onStart();
 
         // when activity starts, init listeners
@@ -290,12 +355,17 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onStop() {
+    public void onStop()
+    {
         super.onStop();
 
         // when activity stops, remove listeners
         if (mAuthenticationListener != null) {
             mAuthentication.removeAuthStateListener(mAuthenticationListener);
+        }
+
+        if (mAccessTokenTracker != null) {
+            mAccessTokenTracker.stopTracking();
         }
     }
 
@@ -322,21 +392,21 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct)
+    {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuthentication.signInWithCredential(credential)
-            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
+            {
                 @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
+                public void onComplete(@NonNull Task<AuthResult> task)
+                {
                     if (task.isSuccessful())
                     {
                         Log.e(TAG,"Google credetials check: completed!");
                         StartMainActivity();
-//                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-//                        startActivity(intent);
-//                        finish();
                     }
                     else
                     {
@@ -352,5 +422,35 @@ public class SignInActivity extends FragmentActivity implements GoogleApiClient.
         Intent intent = new Intent(getBaseContext(), MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    // Save/Clear sign-in info in shared preference
+    private void SetSignInInfo(String idOrToken, String signInMethod, boolean isSignIn)
+    {
+        // Store user ID in shared preference for later usage
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()); // .getContext()
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        if(isSignIn)
+        {
+            editor.putString ("USER_TOKEN", idOrToken);
+            editor.putString ("SIGN_IN_METHOD", signInMethod);
+            editor.putBoolean("IS_SIGNED_IN", true);
+        }
+        else
+        {
+            editor.putString ("USER_TOKEN", null);
+            editor.putString ("SIGN_IN_METHOD", null);
+            editor.putBoolean("IS_SIGNED_IN", false);
+        }
+
+        editor.apply();
+    }
+
+    private boolean IsSignedInSharedPref()
+    {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()); // .getContext()
+        boolean isSignedIn = sharedPrefs.getBoolean("IS_SIGNED_IN", false);
+        return isSignedIn;
     }
 }

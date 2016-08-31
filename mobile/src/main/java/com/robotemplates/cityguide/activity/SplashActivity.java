@@ -15,7 +15,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.e(TAG,"Strat");
+        Log.e(TAG,"SplashActivity start");
         Intent intent = new Intent(this, SignInActivity.class);
         startActivity(intent);
         finish();
